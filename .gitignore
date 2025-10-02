@@ -49,3 +49,7 @@ Thumbs.db
 .cache/
 coverage/
 
+
+### Misc
+*.sqlite
+*.sqlite3

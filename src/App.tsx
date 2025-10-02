@@ -1,25 +1,20 @@
-import { useState } from 'react'
+import React from 'react';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import MainScreen from './components/MainScreen';
+import CustomerForm from './components/CustomerForm';
+import OrderScreen from './components/OrderScreen';
 
-function App() {
-  const [msg, setMsg] = useState<string>('')
-
-  const handlePing = () => {
-    try {
-      const result = window.api?.ping?.()
-      setMsg(String(result))
-    } catch {
-      setMsg('no api')
-    }
-  }
-
+const App: React.FC = () => {
   return (
-    <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-      <h1>React + Vite + Electron</h1>
-      <p>Click to call preload API:</p>
-      <button onClick={handlePing}>Ping</button>
-      {msg && <p>Response: {msg}</p>}
-    </div>
-  )
-}
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainScreen />} />
+        <Route path="/customer-form/:phoneId" element={<CustomerForm />} />
+        <Route path="/order" element={<OrderScreen />} />
+      </Routes>
+    </Router>
+  );
+};
 
-export default App
+export default App;
+

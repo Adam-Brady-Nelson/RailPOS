@@ -15,7 +15,8 @@ export default defineConfig({
   minify: false,
   clean: true,
   splitting: false,
-  bundle: false, // do not bundle Node/Electron built-ins
+  bundle: true, // bundle app code, but keep Electron/native deps external
+  external: ['electron', 'better-sqlite3'],
   platform: 'node',
   target: 'node18',
   shims: false,

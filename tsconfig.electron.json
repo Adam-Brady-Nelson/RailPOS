@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "Bundler",
+    "outDir": "dist-electron",
+    "types": ["node"],
+    "allowJs": false,
+    "noEmit": false,
+    "isolatedModules": false
+  },
+  "include": ["electron/**/*.ts"]
+}

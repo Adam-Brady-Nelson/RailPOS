@@ -1,0 +1,51 @@
+### Dependencies
+node_modules/
+
+### Build outputs
+dist/
+dist-electron/
+out/
+
+### Electron/electron-builder artifacts
+# In case builder writes to project root
+builder-debug.yml
+builder-effective-config.yaml
+latest.yml
+app-update.yml
+*.blockmap
+*.exe
+*.dmg
+*.zip
+*.7z
+*.AppImage
+*.snap
+*.deb
+*.rpm
+*-unpacked/
+
+### Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+debug.log*
+
+### Env files
+.env
+.env.local
+.env.*.local
+
+### Editor/OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+
+### Caches/coverage
+.cache/
+coverage/
+

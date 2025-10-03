@@ -12,6 +12,10 @@ declare global {
       updateDish: (id: number, payload: { name?: string; price?: number; category_id?: number }) => Promise<number>
       deleteDish: (id: number) => Promise<number>
       createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => Promise<{ customerId: number, orderId: number }>
+      getOrdersToday: () => Promise<Array<{ id: number; created_at: string; status: string; phone_id: number; customer_name?: string; customer_phone?: string; total: number }>>
+      startShift: () => Promise<{ path: string; date: string }>
+      getCurrentShift: () => Promise<{ path: string; date: string } | null>
+  closeShift: () => Promise<boolean>
       onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => () => void
     }
   }
@@ -27,6 +31,10 @@ contextBridge.exposeInMainWorld('db', {
   updateDish: (id: number, payload: { name?: string; price?: number; category_id?: number }) => ipcRenderer.invoke('update-dish', id, payload),
   deleteDish: (id: number) => ipcRenderer.invoke('delete-dish', id),
   createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => ipcRenderer.invoke('create-customer-and-order', payload),
+  getOrdersToday: () => ipcRenderer.invoke('get-orders-today'),
+  startShift: () => ipcRenderer.invoke('start-shift'),
+  getCurrentShift: () => ipcRenderer.invoke('get-current-shift'),
+  closeShift: () => ipcRenderer.invoke('close-shift'),
   onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => {
     const listener = (_: unknown, payload: any) => handler(payload)
     ipcRenderer.on('data-changed', listener)

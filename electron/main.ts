@@ -1,7 +1,13 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
-import { initializeDatabase } from './database'
+import { initializeDatabase, getOrdersDb, startNewShift, getCurrentShift, closeCurrentShift } from './database'
 import db from './database'
+// Shift controls
+ipcMain.handle('close-shift', async () => {
+  closeCurrentShift();
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'shift', action: 'close' }));
+  return true;
+})
 
 // In CJS output, Node provides __dirname automatically; tsup CJS transpile will retain it.
 
@@ -87,6 +93,43 @@ ipcMain.handle('delete-dish', async (_e, id: number) => {
   return info.changes
 })
 
+// Orders listing for current shift (today, localtime)
+ipcMain.handle('get-orders-today', async () => {
+  const odb = getOrdersDb();
+  const orders = odb.prepare(`
+    SELECT 
+      o.id,
+      o.created_at,
+      o.status,
+      o.phone_id,
+      o.customer_id,
+      COALESCE(SUM(oi.quantity * oi.price), 0) AS total
+    FROM orders o
+    LEFT JOIN order_items oi ON oi.order_id = o.id
+    WHERE date(o.created_at, 'localtime') = date('now', 'localtime')
+    GROUP BY o.id
+    ORDER BY o.created_at DESC
+  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; customer_id:number|null; total:number }>
+
+  const ids = Array.from(new Set(orders.map(o => o.customer_id).filter((v): v is number => typeof v === 'number')))
+  const customersById = new Map<number, { id:number; name:string; phone:string }>()
+  if (ids.length > 0) {
+    const placeholders = ids.map(() => '?').join(',')
+    const rows = db.prepare(`SELECT id, name, phone FROM customers WHERE id IN (${placeholders})`).all(...ids) as Array<{ id:number; name:string; phone:string }>
+    for (const r of rows) customersById.set(r.id, r)
+  }
+
+  return orders.map(o => ({
+    id: o.id,
+    created_at: o.created_at,
+    status: o.status,
+    phone_id: o.phone_id,
+    customer_name: o.customer_id != null ? customersById.get(o.customer_id)?.name : undefined,
+    customer_phone: o.customer_id != null ? customersById.get(o.customer_id)?.phone : undefined,
+    total: o.total,
+  }))
+})
+
 // CRUD: Customers & Orders
 ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { customer: { name: string; phone: string; address: string }, phoneId: number }) => {
   return db.transaction(() => {
@@ -102,7 +145,8 @@ ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { 
     }
 
     // Create order
-    const orderInfo = db.prepare('INSERT INTO orders (customer_id, phone_id) VALUES (?, ?)').run(customerId, phoneId);
+    const odb = getOrdersDb();
+    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id) VALUES (?, ?)').run(customerId, phoneId);
     const orderId = orderInfo.lastInsertRowid;
 
     BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'customer', action: 'create', id: customerId }));
@@ -111,6 +155,17 @@ ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { 
     return { customerId, orderId };
   })();
 });
+
+// Shift controls
+ipcMain.handle('start-shift', async () => {
+  const info = startNewShift();
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'shift', action: 'start', id: info.date }));
+  return info;
+})
+
+ipcMain.handle('get-current-shift', async () => {
+  return getCurrentShift();
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()

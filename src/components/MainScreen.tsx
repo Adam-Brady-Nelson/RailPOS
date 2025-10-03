@@ -1,11 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const MainScreen: React.FC = () => {
+  const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const current = await window.db.getCurrentShift();
+        setShift(current);
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
+
+  const handleStartShift = async () => {
+    const ok = confirm('Start a new shift? This will create a new orders database for today.');
+    if (!ok) return;
+    try {
+      const info = await window.db.startShift();
+      setShift(info);
+    } catch (e) {
+      alert('Failed to start shift. Check logs.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-6xl mx-auto pt-12 px-4">
         <h1 className="text-5xl font-extrabold text-center mb-10">RailPOS</h1>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, gap: 16 }}>
+          <button
+            onClick={handleStartShift}
+            disabled={!!shift}
+            style={{
+              padding: '8px 14px',
+              background: shift ? '#9ca3af' : '#2563eb',
+              color: '#fff',
+              borderRadius: 8,
+              border: '1px solid ' + (shift ? '#9ca3af' : '#2563eb'),
+              cursor: shift ? 'not-allowed' : 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            {shift ? `Shift active (${shift.date})` : 'Start Shift'}
+          </button>
+          <button
+            onClick={async () => {
+              const ok = confirm('Close the current shift? This will disable order entry until a new shift is started.');
+              if (!ok) return;
+              try {
+                await window.db.closeShift();
+                setShift(null);
+              } catch (e) {
+                alert('Failed to close shift. Check logs.');
+              }
+            }}
+            disabled={!shift}
+            style={{
+              padding: '8px 14px',
+              background: !shift ? '#9ca3af' : '#ef4444',
+              color: '#fff',
+              borderRadius: 8,
+              border: '1px solid ' + (!shift ? '#9ca3af' : '#ef4444'),
+              cursor: !shift ? 'not-allowed' : 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Close Shift
+          </button>
+        </div>
         <div className="flex justify-center" style={{ gap: '6rem' }}>
           <Link
             to="/customer-form/1"
@@ -37,6 +102,53 @@ const MainScreen: React.FC = () => {
           >
             <span className="text-center" style={{ fontSize: '2.25rem', fontWeight: 600, color: '#1f2937' }}>Phone 2</span>
           </Link>
+        </div>
+      </div>
+
+      {/* Bottom nav bar */}
+      <div
+        style={{
+          position: 'fixed',
+          left: 0,
+          bottom: 0,
+          width: '100%',
+          background: '#ffffff',
+          borderTop: '1px solid #e5e7eb',
+          padding: '12px 16px',
+          zIndex: 50,
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 12 }}>
+          <Link
+            to="/orders"
+            style={{
+              padding: '10px 16px',
+              background: '#111827',
+              color: '#ffffff',
+              borderRadius: 8,
+              border: '1px solid #111827',
+              cursor: 'pointer',
+              fontWeight: 600,
+              textDecoration: 'none',
+              display: 'inline-block'
+            }}
+          >
+            Order List
+          </Link>
+          <button
+            type="button"
+            style={{
+              padding: '10px 16px',
+              background: '#374151',
+              color: '#ffffff',
+              borderRadius: 8,
+              border: '1px solid #374151',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Daily totals
+          </button>
         </div>
       </div>
     </div>

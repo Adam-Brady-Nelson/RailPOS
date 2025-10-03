@@ -6,6 +6,9 @@ dist/
 dist-electron/
 out/
 
+#Shifts
+shifts/
+
 ### Electron/electron-builder artifacts
 # In case builder writes to project root
 builder-debug.yml

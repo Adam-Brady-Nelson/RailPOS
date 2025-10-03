@@ -87,6 +87,31 @@ ipcMain.handle('delete-dish', async (_e, id: number) => {
   return info.changes
 })
 
+// CRUD: Customers & Orders
+ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { customer: { name: string; phone: string; address: string }, phoneId: number }) => {
+  return db.transaction(() => {
+    // Find or create customer
+    let customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
+    let customerId: number;
+    if (customerRecord) {
+      customerId = customerRecord.id;
+      db.prepare('UPDATE customers SET name = ?, address = ? WHERE id = ?').run(customer.name, customer.address, customerId);
+    } else {
+      const info = db.prepare('INSERT INTO customers (name, phone, address) VALUES (?, ?, ?)').run(customer.name, customer.phone, customer.address);
+      customerId = info.lastInsertRowid as number;
+    }
+
+    // Create order
+    const orderInfo = db.prepare('INSERT INTO orders (customer_id, phone_id) VALUES (?, ?)').run(customerId, phoneId);
+    const orderId = orderInfo.lastInsertRowid;
+
+    BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'customer', action: 'create', id: customerId }));
+    BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'create', id: orderId }));
+
+    return { customerId, orderId };
+  })();
+});
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })

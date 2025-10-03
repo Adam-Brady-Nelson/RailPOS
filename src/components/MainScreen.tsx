@@ -3,15 +3,39 @@ import { Link } from 'react-router-dom';
 
 const MainScreen: React.FC = () => {
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-8">RailPOS</h1>
-        <div className="flex space-x-4">
-          <Link to="/customer-form/1" className="p-8 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600">
-            Phone 1
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-6xl mx-auto pt-12 px-4">
+        <h1 className="text-5xl font-extrabold text-center mb-10">RailPOS</h1>
+        <div className="flex justify-center" style={{ gap: '6rem' }}>
+          <Link
+            to="/customer-form/1"
+            className="flex items-center justify-center border-4 transition"
+            style={{
+              width: 320,
+              height: 320,
+              background: '#ffffff',
+              borderColor: '#d1d5db',
+              borderRadius: '16px',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+              textDecoration: 'none'
+            }}
+          >
+            <span className="text-center" style={{ fontSize: '2.25rem', fontWeight: 600, color: '#1f2937' }}>Phone 1</span>
           </Link>
-          <Link to="/customer-form/2" className="p-8 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600">
-            Phone 2
+          <Link
+            to="/customer-form/2"
+            className="flex items-center justify-center border-4 transition"
+            style={{
+              width: 320,
+              height: 320,
+              background: '#ffffff',
+              borderColor: '#d1d5db',
+              borderRadius: '16px',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+              textDecoration: 'none'
+            }}
+          >
+            <span className="text-center" style={{ fontSize: '2.25rem', fontWeight: 600, color: '#1f2937' }}>Phone 2</span>
           </Link>
         </div>
       </div>

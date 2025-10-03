@@ -8,11 +8,18 @@ const CustomerForm: React.FC = () => {
   const navigate = useNavigate();
   const { phoneId } = useParams<{ phoneId: string }>();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically save the customer details
-    console.log({ phoneId, name, phone, address });
-    navigate('/order');
+    try {
+      const { orderId } = await window.db.createCustomerAndOrder({
+        customer: { name, phone, address },
+        phoneId: parseInt(phoneId!, 10)
+      });
+      navigate(`/order/${orderId}`);
+    } catch (error) {
+      console.error('Failed to create customer and order:', error);
+      // Optionally, show an error message to the user
+    }
   };
 
   return (
@@ -52,7 +59,7 @@ const CustomerForm: React.FC = () => {
           />
         </div>
         <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          Go to Order
+          Create Order
         </button>
       </form>
     </div>

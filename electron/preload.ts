@@ -11,6 +11,7 @@ declare global {
       createDish: (payload: { name: string; price: number; category_id: number }) => Promise<number>
       updateDish: (id: number, payload: { name?: string; price?: number; category_id?: number }) => Promise<number>
       deleteDish: (id: number) => Promise<number>
+      createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => Promise<{ customerId: number, orderId: number }>
       onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => () => void
     }
   }
@@ -25,6 +26,7 @@ contextBridge.exposeInMainWorld('db', {
   createDish: (payload: { name: string; price: number; category_id: number }) => ipcRenderer.invoke('create-dish', payload),
   updateDish: (id: number, payload: { name?: string; price?: number; category_id?: number }) => ipcRenderer.invoke('update-dish', id, payload),
   deleteDish: (id: number) => ipcRenderer.invoke('delete-dish', id),
+  createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => ipcRenderer.invoke('create-customer-and-order', payload),
   onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => {
     const listener = (_: unknown, payload: any) => handler(payload)
     ipcRenderer.on('data-changed', listener)

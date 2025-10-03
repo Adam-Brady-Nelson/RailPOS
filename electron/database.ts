@@ -54,6 +54,48 @@ export const initializeDatabase = () => {
         { name: 'Coke', price: 2.50, category_id: 4 },
       ]);
     }
+
+    const hasCustomersTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='customers'").get();
+    if (!hasCustomersTable) {
+      db.exec(`
+        CREATE TABLE customers (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          phone TEXT,
+          address TEXT
+        );
+      `);
+    }
+
+    const hasOrdersTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='orders'").get();
+    if (!hasOrdersTable) {
+      db.exec(`
+        CREATE TABLE orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          customer_id INTEGER,
+          phone_id INTEGER,
+          status TEXT NOT NULL DEFAULT 'pending',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE SET NULL
+        );
+      `);
+    }
+
+    const hasOrderItemsTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='order_items'").get();
+    if (!hasOrderItemsTable) {
+      db.exec(`
+        CREATE TABLE order_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_id INTEGER NOT NULL,
+          dish_id INTEGER NOT NULL,
+          quantity INTEGER NOT NULL DEFAULT 1,
+          price REAL NOT NULL,
+          FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
+          FOREIGN KEY (dish_id) REFERENCES dishes (id) ON DELETE RESTRICT
+        );
+      `);
+    }
+
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);

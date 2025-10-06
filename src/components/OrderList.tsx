@@ -37,9 +37,6 @@ const OrderList: React.FC = () => {
     load();
   }, []);
 
-  if (loading) return <div className="p-4">Loading orders…</div>;
-  if (error) return <div className="p-4 text-red-600">{error}</div>;
-
   return (
     <div className="p-4">
       <div style={{ marginBottom: 12 }}>
@@ -60,8 +57,12 @@ const OrderList: React.FC = () => {
           ← Back
         </Link>
       </div>
-      <h1 className="text-2xl font-bold mb-4">Today\'s Orders</h1>
-      {orders.length === 0 ? (
+      <h1 className="text-2xl font-bold mb-4">Today's Orders</h1>
+      {loading ? (
+        <div>Loading orders…</div>
+      ) : error ? (
+        <div className="text-red-600">{error}</div>
+      ) : orders.length === 0 ? (
         <div>No orders yet today.</div>
       ) : (
         <div className="overflow-x-auto">

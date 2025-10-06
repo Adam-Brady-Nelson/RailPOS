@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 
 const CustomerForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -24,6 +24,24 @@ const CustomerForm: React.FC = () => {
 
   return (
     <div className="p-4">
+      <div style={{ marginBottom: 12 }}>
+        <Link
+          to="/"
+          style={{
+            padding: '8px 12px',
+            background: '#111827',
+            color: '#ffffff',
+            borderRadius: 8,
+            border: '1px solid #111827',
+            cursor: 'pointer',
+            fontWeight: 600,
+            textDecoration: 'none',
+            display: 'inline-block'
+          }}
+        >
+          ← Back
+        </Link>
+      </div>
       <h1 className="text-2xl font-bold mb-4">Customer Information (Phone {phoneId})</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useConfirm } from './ConfirmProvider';
 
 const MainScreen: React.FC = () => {
   const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
+  const confirm = useConfirm();
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -16,14 +19,26 @@ const MainScreen: React.FC = () => {
   }, []);
 
   const handleStartShift = async () => {
-    const response = await window.db.confirm({ message: 'Start a new shift?', detail: 'This will create a new orders database for today.', buttons: ['Cancel', 'Start Shift'] });
+    if (busy) return;
+    // Guard for browser live view where preload isn't available
+    if (!(window as any).db || typeof (window as any).db.startShift !== 'function') {
+      await confirm({
+        message: 'Start Shift unavailable in browser',
+        detail: 'This action requires the Electron runtime. Run "npm run dev" and use the Electron window.',
+        buttons: ['OK']
+      });
+      return;
+    }
+    const response = await confirm({ message: 'Start a new shift?', detail: 'This will create a new orders database for today.', buttons: ['Cancel', 'Start Shift'] });
     if (response !== 1) return;
     try {
+      setBusy(true);
       const info = await window.db.startShift();
       setShift(info);
     } catch (e) {
-      alert('Failed to start shift. Check logs.');
-    }
+      const msg = (e as any)?.message || 'Failed to start shift.';
+      await confirm({ message: 'Failed to start shift', detail: msg, buttons: ['OK'] });
+    } finally { setBusy(false); }
   };
 
   return (
@@ -48,14 +63,26 @@ const MainScreen: React.FC = () => {
           </button>
           <button
             onClick={async () => {
-              const response = await window.db.confirm({ message: 'Close the current shift?', detail: 'This will disable order entry until a new shift is started.', type: 'warning', buttons: ['Cancel', 'Close Shift'] });
+              if (busy) return;
+              // Guard for browser live view where preload isn't available
+              if (!(window as any).db || typeof (window as any).db.closeShift !== 'function') {
+                await confirm({
+                  message: 'Close Shift unavailable in browser',
+                  detail: 'This action requires the Electron runtime. Run "npm run dev" and use the Electron window.',
+                  buttons: ['OK']
+                });
+                return;
+              }
+              const response = await confirm({ message: 'Close the current shift?', detail: 'This will disable order entry until a new shift is started.', buttons: ['Cancel', 'Close Shift'] });
               if (response !== 1) return;
               try {
+                setBusy(true);
                 await window.db.closeShift();
                 setShift(null);
               } catch (e) {
-                alert('Failed to close shift. Check logs.');
-              }
+                const msg = (e as any)?.message || 'Failed to close shift.';
+                await confirm({ message: 'Failed to close shift', detail: msg, buttons: ['OK'] });
+              } finally { setBusy(false); }
             }}
             disabled={!shift}
             style={{

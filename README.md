@@ -45,3 +45,22 @@ A modern Point of Sale (POS) system for restaurants built with React, Vite, Elec
 - In production, Electron loads the built assets from `dist/index.html`
 - The SQLite database file `railpos.sqlite` is created automatically in the application directory
 - Database is initialized with sample categories and dishes on first run
+
+# To Fix
+- Fix DB, still doesn't meet planned spec (Later date for proper spec introduction)
+- Order gets placed as soon as the customer is selected from CustomerForm.tsx
+- Order Screen is completely mislabelled.
+- Order screen list selected items.
+- Order list add comments to items.
+- Add buttons to show cash/card payment.
+- Implement final order check screen
+
+# Main goals
+- On screen keyboard for touch screen support.
+- Customer form function and look redesign
+- System to update catagories and items within
+- Split db to allow customer lookup and lookup orders from last three order, rest can be truncated when an order is placed.
+
+# Stretch goals
+- Usage of phone line to automatically pull phone number into system.
+- Usage of Eircode API/Address API to autofill.

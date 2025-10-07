@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -9,6 +9,7 @@ const ASIDE_WIDTH = 380; // px right panel
 
 const OrderScreen: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -112,6 +113,44 @@ const OrderScreen: React.FC = () => {
         ) : (
           <div className="text-gray-600">No items in this category.</div>
         )}
+      </div>
+
+      {/* Floating Back and Checkout buttons */}
+      <div style={{ position: 'fixed', bottom: BOTTOM_BAR_HEIGHT + 12, left: 12, zIndex: 1100 }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            padding: '10px 16px',
+            background: '#ef4444',
+            color: '#ffffff',
+            borderRadius: 8,
+            border: '1px solid #ef4444',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          ← Back
+        </button>
+      </div>
+      <div style={{ position: 'fixed', bottom: BOTTOM_BAR_HEIGHT + 12, right: ASIDE_WIDTH + 24 + 12, zIndex: 1100 }}>
+        <button
+          onClick={() => {
+            const amount = subtotal;
+            // Navigate to main screen and show confirmation there
+            navigate('/', { state: { orderPlaced: { amount } } });
+          }}
+          style={{
+            padding: '10px 16px',
+            background: '#10b981',
+            color: '#ffffff',
+            borderRadius: 8,
+            border: '1px solid #10b981',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Checkout (${subtotal.toFixed(2)})
+        </button>
       </div>
 
       {/* Right order panel */}

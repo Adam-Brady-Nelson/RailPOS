@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useConfirm } from './ConfirmProvider';
 
 const MainScreen: React.FC = () => {
   const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
   const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
+  const location = useLocation() as any;
 
   useEffect(() => {
     (async () => {
@@ -17,6 +18,16 @@ const MainScreen: React.FC = () => {
       }
     })();
   }, []);
+
+  // Show order placed message when returning from checkout
+  useEffect(() => {
+    const placed = location?.state?.orderPlaced;
+    if (placed && typeof placed.amount === 'number') {
+      // Clear the state so it doesn't re-show on navigation
+      history.replaceState({}, '');
+      confirm({ message: 'Order placed!', detail: `Price $${placed.amount.toFixed(2)}`, buttons: ['OK'] });
+    }
+  }, [location?.state]);
 
   const handleStartShift = async () => {
     if (busy) return;

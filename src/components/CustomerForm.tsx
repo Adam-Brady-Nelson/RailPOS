@@ -11,11 +11,9 @@ const CustomerForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { orderId } = await window.db.createCustomerAndOrder({
-        customer: { name, phone, address },
-        phoneId: parseInt(phoneId!, 10)
-      });
-      navigate(`/order/${orderId}`);
+      const { customerId } = await window.db.createOrUpdateCustomer({ name, phone, address });
+      // Navigate to order screen without creating an order yet; attach details in state
+      navigate(`/order/new`, { state: { customerId, phoneId: parseInt(phoneId!, 10), customer: { name, phone, address } } });
     } catch (error) {
       console.error('Failed to create customer and order:', error);
       // Optionally, show an error message to the user

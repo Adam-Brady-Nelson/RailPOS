@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -10,6 +10,8 @@ const ASIDE_WIDTH = 380; // px right panel
 const OrderScreen: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const location = useLocation() as any;
+  const pending = location?.state as { customerId?: number; phoneId?: number; customer?: { name:string; phone:string; address:string } } | undefined;
   const [categories, setCategories] = useState<Category[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -134,9 +136,17 @@ const OrderScreen: React.FC = () => {
       </div>
       <div style={{ position: 'fixed', bottom: BOTTOM_BAR_HEIGHT + 12, right: ASIDE_WIDTH + 24 + 12, zIndex: 1100 }}>
         <button
-          onClick={() => {
+          onClick={async () => {
             const amount = subtotal;
-            // Navigate to main screen and show confirmation there
+            // If we arrived via CustomerForm (no order yet), create it now
+            if (pending?.customerId && pending?.phoneId) {
+              const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+              try {
+                await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items });
+              } catch (e) {
+                console.error(e);
+              }
+            }
             navigate('/', { state: { orderPlaced: { amount } } });
           }}
           style={{

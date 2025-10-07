@@ -159,6 +159,43 @@ ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { 
   })();
 });
 
+// New: create or update a customer only (no order)
+ipcMain.handle('create-or-update-customer', async (_e, customer: { name: string; phone: string; address: string }) => {
+  return db.transaction(() => {
+    let customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
+    let customerId: number;
+    if (customerRecord) {
+      customerId = customerRecord.id;
+      db.prepare('UPDATE customers SET name = ?, address = ? WHERE id = ?').run(customer.name, customer.address, customerId);
+    } else {
+      const info = db.prepare('INSERT INTO customers (name, phone, address) VALUES (?, ?, ?)').run(customer.name, customer.phone, customer.address);
+      customerId = info.lastInsertRowid as number;
+    }
+    BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'customer', action: 'create', id: customerId }));
+    return { customerId };
+  })();
+});
+
+// New: create order with items at checkout
+ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => {
+  try {
+    const odb = getOrdersDb();
+    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id) VALUES (?, ?)').run(payload.customerId, payload.phoneId);
+    const orderId = orderInfo.lastInsertRowid as number;
+    if (payload.items && payload.items.length > 0) {
+      const stmt = odb.prepare('INSERT INTO order_items (order_id, dish_id, quantity, price) VALUES (?, ?, ?, ?)');
+      const insertMany = odb.transaction((rows: Array<{ dish_id:number; quantity:number; price:number }>) => {
+        for (const it of rows) stmt.run(orderId, it.dish_id, it.quantity, it.price);
+      });
+      insertMany(payload.items);
+    }
+    BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'create', id: orderId }));
+    return { orderId };
+  } catch (err: any) {
+    throw new Error(`CREATE_ORDER_FAILED: ${err?.message || String(err)}`);
+  }
+});
+
 // Shift controls
 ipcMain.handle('start-shift', async () => {
   try {

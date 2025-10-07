@@ -12,6 +12,8 @@ declare global {
       updateDish: (id: number, payload: { name?: string; price?: number; category_id?: number }) => Promise<number>
       deleteDish: (id: number) => Promise<number>
       createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => Promise<{ customerId: number, orderId: number }>
+  createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => Promise<{ customerId: number }>
+  createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => Promise<{ orderId: number }>
       getOrdersToday: () => Promise<Array<{ id: number; created_at: string; status: string; phone_id: number; customer_name?: string; customer_phone?: string; total: number }>>
       startShift: () => Promise<{ path: string; date: string }>
       getCurrentShift: () => Promise<{ path: string; date: string } | null>
@@ -31,6 +33,8 @@ contextBridge.exposeInMainWorld('db', {
   updateDish: (id: number, payload: { name?: string; price?: number; category_id?: number }) => ipcRenderer.invoke('update-dish', id, payload),
   deleteDish: (id: number) => ipcRenderer.invoke('delete-dish', id),
   createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => ipcRenderer.invoke('create-customer-and-order', payload),
+  createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => ipcRenderer.invoke('create-or-update-customer', customer),
+  createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => ipcRenderer.invoke('create-order-with-items', payload),
   getOrdersToday: () => ipcRenderer.invoke('get-orders-today'),
   startShift: () => ipcRenderer.invoke('start-shift'),
   getCurrentShift: () => ipcRenderer.invoke('get-current-shift'),

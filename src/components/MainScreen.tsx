@@ -16,8 +16,8 @@ const MainScreen: React.FC = () => {
   }, []);
 
   const handleStartShift = async () => {
-    const ok = confirm('Start a new shift? This will create a new orders database for today.');
-    if (!ok) return;
+    const response = await window.db.confirm({ message: 'Start a new shift?', detail: 'This will create a new orders database for today.', buttons: ['Cancel', 'Start Shift'] });
+    if (response !== 1) return;
     try {
       const info = await window.db.startShift();
       setShift(info);
@@ -48,8 +48,8 @@ const MainScreen: React.FC = () => {
           </button>
           <button
             onClick={async () => {
-              const ok = confirm('Close the current shift? This will disable order entry until a new shift is started.');
-              if (!ok) return;
+              const response = await window.db.confirm({ message: 'Close the current shift?', detail: 'This will disable order entry until a new shift is started.', type: 'warning', buttons: ['Cancel', 'Close Shift'] });
+              if (response !== 1) return;
               try {
                 await window.db.closeShift();
                 setShift(null);

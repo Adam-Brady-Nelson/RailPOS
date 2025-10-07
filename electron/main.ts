@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'node:path'
 import { initializeDatabase, getOrdersDb, startNewShift, getCurrentShift, closeCurrentShift } from './database'
 import db from './database'
@@ -6,6 +6,9 @@ import db from './database'
 ipcMain.handle('close-shift', async () => {
   closeCurrentShift();
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'shift', action: 'close' }));
+  // Ensure window regains focus after closing shift
+  const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+  if (win) win.focus()
   return true;
 })
 
@@ -39,6 +42,23 @@ async function createWindow() {
     mainWindow = null
   })
 }
+// Non-blocking confirm dialog via IPC
+ipcMain.handle('confirm', async (_e, opts: { message: string; detail?: string; buttons?: string[]; type?: 'none'|'info'|'error'|'question'|'warning' }) => {
+  const win = BrowserWindow.getFocusedWindow() || mainWindow || BrowserWindow.getAllWindows()[0] || undefined
+  const buttons = opts.buttons ?? ['Cancel', 'OK']
+  const { response } = await dialog.showMessageBox(win ?? undefined, {
+    type: opts.type ?? 'question',
+    message: opts.message,
+    detail: opts.detail,
+    buttons,
+    cancelId: 0,
+    defaultId: Math.max(1, buttons.length - 1),
+    noLink: true,
+  })
+  // Refocus content after dialog
+  if (win) win.focus()
+  return response
+})
 
 // IPC handlers
 ipcMain.handle('get-categories', async () => {
@@ -160,6 +180,8 @@ ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { 
 ipcMain.handle('start-shift', async () => {
   const info = startNewShift();
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'shift', action: 'start', id: info.date }));
+  const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+  if (win) win.focus()
   return info;
 })
 

@@ -16,6 +16,7 @@ declare global {
       startShift: () => Promise<{ path: string; date: string }>
       getCurrentShift: () => Promise<{ path: string; date: string } | null>
   closeShift: () => Promise<boolean>
+      confirm: (opts: { message: string; detail?: string; buttons?: string[]; type?: 'none'|'info'|'error'|'question'|'warning' }) => Promise<number>
       onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => () => void
     }
   }
@@ -35,6 +36,7 @@ contextBridge.exposeInMainWorld('db', {
   startShift: () => ipcRenderer.invoke('start-shift'),
   getCurrentShift: () => ipcRenderer.invoke('get-current-shift'),
   closeShift: () => ipcRenderer.invoke('close-shift'),
+  confirm: (opts: { message: string; detail?: string; buttons?: string[]; type?: 'none'|'info'|'error'|'question'|'warning' }) => ipcRenderer.invoke('confirm', opts),
   onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => {
     const listener = (_: unknown, payload: any) => handler(payload)
     ipcRenderer.on('data-changed', listener)

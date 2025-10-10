@@ -133,11 +133,52 @@ ipcMain.handle('get-orders-today', async () => {
   }))
 })
 
+// Get single order details (items + customer info)
+ipcMain.handle('get-order-details', async (_e, orderId: number) => {
+  const odb = getOrdersDb();
+  const order = odb.prepare(`
+    SELECT id, customer_id, phone_id, status, created_at
+    FROM orders WHERE id = ?
+  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; created_at:string } | undefined;
+  if (!order) return null;
+
+  const items = odb.prepare(`
+    SELECT dish_id, quantity, price
+    FROM order_items
+    WHERE order_id = ?
+    ORDER BY id ASC
+  `).all(orderId) as Array<{ dish_id:number; quantity:number; price:number }>;
+
+  const subtotal = items.reduce((s, it) => s + it.price * it.quantity, 0);
+
+  let customer: { id:number; name:string; phone:string } | null = null;
+  if (order.customer_id != null) {
+    const row = db.prepare('SELECT id, name, phone FROM customers WHERE id = ?').get(order.customer_id) as { id:number; name:string; phone:string } | undefined
+    if (row) customer = row;
+  }
+
+  // Enrich dish names from primary DB
+  const dishIds = Array.from(new Set(items.map(it => it.dish_id)));
+  const names = new Map<number, string>();
+  if (dishIds.length > 0) {
+    const placeholders = dishIds.map(() => '?').join(',');
+    const rows = db.prepare(`SELECT id, name FROM dishes WHERE id IN (${placeholders})`).all(...dishIds) as Array<{ id:number; name:string }>;
+    for (const r of rows) names.set(r.id, r.name);
+  }
+
+  return {
+    order: { id: order.id, status: order.status, phone_id: order.phone_id, created_at: order.created_at },
+    customer,
+    items: items.map(it => ({ dish_id: it.dish_id, name: names.get(it.dish_id) ?? `Dish #${it.dish_id}` , quantity: it.quantity, price: it.price })),
+    subtotal,
+  };
+})
+
 // CRUD: Customers & Orders
 ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { customer: { name: string; phone: string; address: string }, phoneId: number }) => {
   return db.transaction(() => {
     // Find or create customer
-    let customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
+  const customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
     let customerId: number;
     if (customerRecord) {
       customerId = customerRecord.id;
@@ -162,7 +203,7 @@ ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { 
 // New: create or update a customer only (no order)
 ipcMain.handle('create-or-update-customer', async (_e, customer: { name: string; phone: string; address: string }) => {
   return db.transaction(() => {
-    let customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
+  const customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
     let customerId: number;
     if (customerRecord) {
       customerId = customerRecord.id;
@@ -191,8 +232,9 @@ ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: numb
     }
     BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'create', id: orderId }));
     return { orderId };
-  } catch (err: any) {
-    throw new Error(`CREATE_ORDER_FAILED: ${err?.message || String(err)}`);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`CREATE_ORDER_FAILED: ${msg}`);
   }
 });
 
@@ -204,8 +246,8 @@ ipcMain.handle('start-shift', async () => {
     const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
     if (win) win.focus()
     return info;
-  } catch (err: any) {
-    const msg = err?.message || String(err);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`START_SHIFT_FAILED: ${msg}`);
   }
 })

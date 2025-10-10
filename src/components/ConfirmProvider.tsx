@@ -58,7 +58,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setPrevHash(null);
       };
     }
-  }, [dialog]);
+  }, [dialog, prevHash]);
 
   const modal = dialog ? (
     <div

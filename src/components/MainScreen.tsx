@@ -6,14 +6,14 @@ const MainScreen: React.FC = () => {
   const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
   const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
-  const location = useLocation() as any;
+  const location = useLocation() as unknown as { state: { orderPlaced?: { amount: number } } | null };
 
   useEffect(() => {
     (async () => {
       try {
         const current = await window.db.getCurrentShift();
         setShift(current);
-      } catch (e) {
+      } catch {
         // ignore
       }
     })();
@@ -27,12 +27,12 @@ const MainScreen: React.FC = () => {
       history.replaceState({}, '');
       confirm({ message: 'Order placed!', detail: `Price $${placed.amount.toFixed(2)}`, buttons: ['OK'] });
     }
-  }, [location?.state]);
+  }, [location?.state, confirm]);
 
   const handleStartShift = async () => {
     if (busy) return;
     // Guard for browser live view where preload isn't available
-    if (!(window as any).db || typeof (window as any).db.startShift !== 'function') {
+    if (!('db' in window) || typeof window.db.startShift !== 'function') {
       await confirm({
         message: 'Start Shift unavailable in browser',
         detail: 'This action requires the Electron runtime. Run "npm run dev" and use the Electron window.',
@@ -46,8 +46,8 @@ const MainScreen: React.FC = () => {
       setBusy(true);
       const info = await window.db.startShift();
       setShift(info);
-    } catch (e) {
-      const msg = (e as any)?.message || 'Failed to start shift.';
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to start shift.';
       await confirm({ message: 'Failed to start shift', detail: msg, buttons: ['OK'] });
     } finally { setBusy(false); }
   };
@@ -76,7 +76,7 @@ const MainScreen: React.FC = () => {
             onClick={async () => {
               if (busy) return;
               // Guard for browser live view where preload isn't available
-              if (!(window as any).db || typeof (window as any).db.closeShift !== 'function') {
+              if (!('db' in window) || typeof window.db.closeShift !== 'function') {
                 await confirm({
                   message: 'Close Shift unavailable in browser',
                   detail: 'This action requires the Electron runtime. Run "npm run dev" and use the Electron window.',
@@ -90,8 +90,8 @@ const MainScreen: React.FC = () => {
                 setBusy(true);
                 await window.db.closeShift();
                 setShift(null);
-              } catch (e) {
-                const msg = (e as any)?.message || 'Failed to close shift.';
+              } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : 'Failed to close shift.';
                 await confirm({ message: 'Failed to close shift', detail: msg, buttons: ['OK'] });
               } finally { setBusy(false); }
             }}

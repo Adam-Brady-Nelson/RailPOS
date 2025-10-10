@@ -8,7 +8,7 @@
     "dev": "concurrently -k -n VITE,ELC-BUILD,ELECTRON -c bgBlue.bold,bgYellow.bold,bgMagenta.bold \"cross-env VITE_DEV_SERVER=true vite\" \"tsup --watch\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER=true electron .\"",
     "build": "tsup && vite build",
     "preview": "vite preview",
-    "electron": "electron .",
+    "electron": "npm run build && electron .",
     "package": "electron-builder",
     "package:win": "electron-builder -w",
     "package:linux": "electron-builder -l",

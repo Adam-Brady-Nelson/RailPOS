@@ -1,6 +1,8 @@
 export function closeCurrentShift() {
   if (ordersDb) {
-    try { ordersDb.close(); } catch {}
+    try { ordersDb.close(); } catch (e) {
+      console.warn('[DB] Error closing ordersDb:', e);
+    }
     ordersDb = null;
   }
   if (fs.existsSync(currentShiftFile)) fs.unlinkSync(currentShiftFile);
@@ -10,6 +12,7 @@ import path from 'path';
 import fs from 'fs';
 import { app } from 'electron';
 import Database from 'better-sqlite3';
+type BetterSqlite3Database = InstanceType<typeof Database>;
 
 const isDev = process.env.VITE_DEV_SERVER === 'true' || !app.isPackaged
 const baseDir = isDev ? process.cwd() : path.dirname(app.getPath('exe'))
@@ -20,7 +23,7 @@ const db = new Database(dbPath, { verbose: console.log });
 // Per-shift orders database handling
 const shiftsDir = path.join(baseDir, 'shifts');
 const currentShiftFile = path.join(shiftsDir, 'current-shift.json');
-let ordersDb: any | null = null;
+let ordersDb: BetterSqlite3Database | null = null;
 
 export type ShiftInfo = { path: string; date: string };
 
@@ -64,7 +67,7 @@ export function startNewShift(): ShiftInfo {
     );
   `);
   // swap live ordersDb
-  if (ordersDb) try { ordersDb.close(); } catch {}
+  if (ordersDb) try { ordersDb.close(); } catch (e) { console.warn('[DB] Error closing previous ordersDb:', e); }
   ordersDb = odb;
   const info: ShiftInfo = { path: file, date };
   writeCurrentShift(info);
@@ -72,7 +75,7 @@ export function startNewShift(): ShiftInfo {
   return info;
 }
 
-export function getOrdersDb(): any {
+export function getOrdersDb(): BetterSqlite3Database {
   if (ordersDb) return ordersDb;
   const info = getCurrentShift();
   if (!info) throw new Error('NO_ACTIVE_SHIFT');

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 type Category = { id: number; name: string };
@@ -10,8 +10,8 @@ const ASIDE_WIDTH = 380; // px right panel
 const OrderScreen: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const location = useLocation() as any;
-  const pending = location?.state as { customerId?: number; phoneId?: number; customer?: { name:string; phone:string; address:string } } | undefined;
+  const location = useLocation() as unknown as { state?: { customerId?: number; phoneId?: number; customer?: { name:string; phone:string; address:string } } };
+  const pending = location?.state;
   const [categories, setCategories] = useState<Category[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -43,7 +43,7 @@ const OrderScreen: React.FC = () => {
   const subtotal = useMemo(() => itemsList.reduce((s, it) => s + it.price * it.qty, 0), [itemsList]);
 
   // Helpers
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     setLoadingCats(true);
     try {
       const result = await window.db.getCategories();
@@ -52,8 +52,8 @@ const OrderScreen: React.FC = () => {
     } finally {
       setLoadingCats(false);
     }
-  };
-  const loadDishes = async (catId: number) => {
+  }, [selectedCategory]);
+  const loadDishes = useCallback(async (catId: number) => {
     setLoadingDishes(true);
     try {
       const result = await window.db.getDishes(catId);
@@ -61,13 +61,13 @@ const OrderScreen: React.FC = () => {
     } finally {
       setLoadingDishes(false);
     }
-  };
+  }, []);
 
   // Initial load
-  useEffect(() => { loadCategories(); }, []);
+  useEffect(() => { loadCategories(); }, [loadCategories]);
 
   // Update dishes when category changes
-  useEffect(() => { if (selectedCategory != null) loadDishes(selectedCategory); }, [selectedCategory]);
+  useEffect(() => { if (selectedCategory != null) loadDishes(selectedCategory); }, [selectedCategory, loadDishes]);
 
   // Refresh when data changes
   useEffect(() => {
@@ -78,7 +78,7 @@ const OrderScreen: React.FC = () => {
       }
     });
     return () => off();
-  }, [selectedCategory]);
+  }, [selectedCategory, loadCategories, loadDishes]);
 
   const gridCols = useMemo(() => 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6', []);
 

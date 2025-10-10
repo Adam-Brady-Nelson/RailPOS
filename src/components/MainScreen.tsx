@@ -112,6 +112,16 @@ const MainScreen: React.FC = () => {
         <div className="flex justify-center" style={{ gap: '6rem' }}>
           <Link
             to="/customer-form/1"
+            onClick={async (e) => {
+              if (!shift) {
+                e.preventDefault();
+                await confirm({
+                  message: 'No active shift',
+                  detail: 'Start a shift before taking orders.',
+                  buttons: ['OK']
+                });
+              }
+            }}
             className="flex items-center justify-center border-4 transition"
             style={{
               width: 320,
@@ -120,13 +130,26 @@ const MainScreen: React.FC = () => {
               borderColor: '#d1d5db',
               borderRadius: '16px',
               boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              opacity: shift ? 1 : 0.6,
+              cursor: shift ? 'pointer' : 'not-allowed'
             }}
+            aria-disabled={!shift}
           >
             <span className="text-center" style={{ fontSize: '2.25rem', fontWeight: 600, color: '#1f2937' }}>Phone 1</span>
           </Link>
           <Link
             to="/customer-form/2"
+            onClick={async (e) => {
+              if (!shift) {
+                e.preventDefault();
+                await confirm({
+                  message: 'No active shift',
+                  detail: 'Start a shift before taking orders.',
+                  buttons: ['OK']
+                });
+              }
+            }}
             className="flex items-center justify-center border-4 transition"
             style={{
               width: 320,
@@ -135,8 +158,11 @@ const MainScreen: React.FC = () => {
               borderColor: '#d1d5db',
               borderRadius: '16px',
               boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              opacity: shift ? 1 : 0.6,
+              cursor: shift ? 'pointer' : 'not-allowed'
             }}
+            aria-disabled={!shift}
           >
             <span className="text-center" style={{ fontSize: '2.25rem', fontWeight: 600, color: '#1f2937' }}>Phone 2</span>
           </Link>

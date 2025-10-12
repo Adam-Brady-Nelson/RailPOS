@@ -174,6 +174,37 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   };
 })
 
+// Update items for an existing order
+ipcMain.handle('update-order-items', async (_e, payload: { orderId: number; items: Array<{ dish_id:number; quantity:number; price:number }> }) => {
+  const odb = getOrdersDb();
+  const exists = odb.prepare('SELECT id FROM orders WHERE id = ?').get(payload.orderId) as { id:number } | undefined;
+  if (!exists) throw new Error('ORDER_NOT_FOUND');
+  const delStmt = odb.prepare('DELETE FROM order_items WHERE order_id = ?');
+  const insStmt = odb.prepare('INSERT INTO order_items (order_id, dish_id, quantity, price) VALUES (?, ?, ?, ?)');
+  const tx = odb.transaction((rows: Array<{ dish_id:number; quantity:number; price:number }>) => {
+    delStmt.run(payload.orderId);
+    for (const it of rows) insStmt.run(payload.orderId, it.dish_id, it.quantity, it.price);
+  });
+  tx(payload.items ?? []);
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'update', id: payload.orderId }));
+  return true;
+})
+
+// Search customers by phone substring/prefix
+ipcMain.handle('search-customers-by-phone', async (_e, query: string, limit: number = 10) => {
+  const q = (query ?? '').trim();
+  if (q.length === 0) return [];
+  const like = `%${q}%`;
+  const rows = db.prepare(`
+    SELECT id, name, phone, address
+    FROM customers
+    WHERE phone LIKE ?
+    ORDER BY name ASC
+    LIMIT ?
+  `).all(like, limit) as Array<{ id:number; name:string; phone:string; address:string }>;
+  return rows;
+})
+
 // CRUD: Customers & Orders
 ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { customer: { name: string; phone: string; address: string }, phoneId: number }) => {
   return db.transaction(() => {

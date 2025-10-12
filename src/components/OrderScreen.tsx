@@ -18,6 +18,8 @@ const OrderScreen: React.FC = () => {
   const [loadingCats, setLoadingCats] = useState(true);
   const [loadingDishes, setLoadingDishes] = useState(false);
   const [orderItems, setOrderItems] = useState<Record<number, { id:number; name:string; price:number; qty:number }>>({});
+  const isEditingExisting = !!orderId && orderId !== 'new';
+  const [loadingExisting, setLoadingExisting] = useState<boolean>(false);
 
   const addItem = (dish: Dish) => {
     setOrderItems((prev) => {
@@ -80,16 +82,42 @@ const OrderScreen: React.FC = () => {
     return () => off();
   }, [selectedCategory, loadCategories, loadDishes]);
 
+  // Load existing order items when editing
+  useEffect(() => {
+    let ignore = false;
+    const loadExisting = async () => {
+      if (!isEditingExisting) return;
+      setLoadingExisting(true);
+      try {
+        const details = await window.db.getOrderDetails(Number(orderId));
+        if (!details || ignore) return;
+        // Populate items
+        const next: Record<number, { id:number; name:string; price:number; qty:number }> = {};
+        for (const it of details.items) {
+          next[it.dish_id] = { id: it.dish_id, name: it.name, price: it.price, qty: it.quantity };
+        }
+        setOrderItems(next);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingExisting(false);
+      }
+    };
+    loadExisting();
+    return () => { ignore = true; };
+  }, [isEditingExisting, orderId]);
+
   const gridCols = useMemo(() => 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6', []);
 
   if (loadingCats && categories.length === 0) return <div className="p-4">Loading menu…</div>;
+  if (loadingExisting) return <div className="p-4">Loading order…</div>;
   if (!categories.length) return <div className="p-4">No categories found. Add categories in the database.</div>;
 
   return (
     <div className="relative min-h-screen" style={{ paddingBottom: BOTTOM_BAR_HEIGHT, paddingRight: ASIDE_WIDTH + 24 }}>
       {/* Header */}
       <div className="px-4 py-3 border-b bg-white sticky top-0 z-10">
-        <h1 className="text-2xl font-bold">Order #{orderId}</h1>
+  <h1 className="text-2xl font-bold">{isEditingExisting ? `Edit Order #${orderId}` : 'New Order'}</h1>
         {selectedCategory != null && (
           <p className="text-sm text-gray-600">Viewing: {categories.find(c => c.id === selectedCategory)?.name}</p>
         )}
@@ -120,7 +148,7 @@ const OrderScreen: React.FC = () => {
       {/* Floating Back and Checkout buttons */}
       <div style={{ position: 'fixed', bottom: BOTTOM_BAR_HEIGHT + 12, left: 12, zIndex: 1100 }}>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(isEditingExisting ? '/orders' : '/')}
           style={{
             padding: '10px 16px',
             background: '#ef4444',
@@ -138,14 +166,19 @@ const OrderScreen: React.FC = () => {
         <button
           onClick={async () => {
             const amount = subtotal;
-            // If we arrived via CustomerForm (no order yet), create it now
-            if (pending?.customerId && pending?.phoneId) {
-              const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
-              try {
-                await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items });
-              } catch (e) {
-                console.error(e);
+            const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+            try {
+              if (isEditingExisting) {
+                await window.db.updateOrderItems({ orderId: Number(orderId), items });
+                navigate('/orders');
+                return;
               }
+              // If we arrived via CustomerForm (no order yet), create it now
+              if (pending?.customerId && pending?.phoneId) {
+                await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items });
+              }
+            } catch (e) {
+              console.error(e);
             }
             navigate('/', { state: { orderPlaced: { amount } } });
           }}
@@ -159,7 +192,7 @@ const OrderScreen: React.FC = () => {
             cursor: 'pointer',
           }}
         >
-          Checkout (${subtotal.toFixed(2)})
+          {isEditingExisting ? 'Save Changes' : `Checkout ($${subtotal.toFixed(2)})`}
         </button>
       </div>
 

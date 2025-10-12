@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface OrderRow {
   id: number;
@@ -14,6 +14,7 @@ interface OrderRow {
 const ASIDE_WIDTH = 420; // px
 
 const OrderList: React.FC = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,20 @@ const OrderList: React.FC = () => {
       }
     };
     load();
-  }, []);
+  const off = window.db.onDataChanged(async ({ entity, id }) => {
+      if (entity === 'order') {
+        try {
+          const rows = await window.db.getOrdersToday();
+          setOrders(rows);
+          if (selectedId != null && Number(id) === selectedId) {
+            const d = await window.db.getOrderDetails(selectedId);
+            setDetails(d);
+          }
+        } catch (e) { console.error(e); }
+      }
+    });
+    return () => { off(); };
+  }, [selectedId]);
 
   useEffect(() => {
     if (selectedId == null) { setDetails(null); return; }
@@ -165,6 +179,14 @@ const OrderList: React.FC = () => {
                     ))}
                   </ul>
                 )}
+              </div>
+              <div>
+                <button
+                  onClick={() => navigate(`/order/${selectedId}`)}
+                  className="px-3 py-2 rounded bg-blue-600 text-white border border-blue-700 hover:bg-blue-700"
+                >
+                  Edit this order
+                </button>
               </div>
             </div>
           )}

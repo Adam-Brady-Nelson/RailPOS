@@ -21,6 +21,8 @@ declare global {
         items: Array<{ dish_id:number; name:string; quantity:number; price:number }>,
         subtotal: number
       } | null>
+      searchCustomersByPhone: (query: string, limit?: number) => Promise<Array<{ id:number; name:string; phone:string; address:string }>>
+      updateOrderItems: (payload: { orderId: number; items: Array<{ dish_id:number; quantity:number; price:number }> }) => Promise<boolean>
       startShift: () => Promise<{ path: string; date: string }>
       getCurrentShift: () => Promise<{ path: string; date: string } | null>
   closeShift: () => Promise<boolean>
@@ -43,6 +45,8 @@ contextBridge.exposeInMainWorld('db', {
   createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => ipcRenderer.invoke('create-order-with-items', payload),
   getOrdersToday: () => ipcRenderer.invoke('get-orders-today'),
   getOrderDetails: (orderId: number) => ipcRenderer.invoke('get-order-details', orderId),
+  searchCustomersByPhone: (query: string, limit?: number) => ipcRenderer.invoke('search-customers-by-phone', query, limit),
+  updateOrderItems: (payload: { orderId: number; items: Array<{ dish_id:number; quantity:number; price:number }> }) => ipcRenderer.invoke('update-order-items', payload),
   startShift: () => ipcRenderer.invoke('start-shift'),
   getCurrentShift: () => ipcRenderer.invoke('get-current-shift'),
   closeShift: () => ipcRenderer.invoke('close-shift'),

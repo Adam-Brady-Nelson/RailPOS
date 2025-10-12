@@ -16,7 +16,8 @@
     "package:all": "electron-builder -wml",
     "postinstall": "electron-builder install-app-deps",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "npm run lint && npm run typecheck"
   },
   "build": {
     "appId": "com.example.reactviteelectron",

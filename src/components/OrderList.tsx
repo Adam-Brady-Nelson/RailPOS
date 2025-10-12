@@ -59,7 +59,7 @@ const OrderList: React.FC = () => {
       }
     });
     return () => { off(); };
-  }, []);
+  }, [selectedId]);
 
   useEffect(() => {
     if (selectedId == null) { setDetails(null); return; }

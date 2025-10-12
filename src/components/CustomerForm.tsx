@@ -25,7 +25,7 @@ const CustomerForm: React.FC = () => {
     }
   };
 
-  // Debounced lookup on phone input
+  // Debounced lookup on phone input (fetch only)
   useEffect(() => {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
     if (!phone || phone.trim().length < 2) {
@@ -39,16 +39,21 @@ const CustomerForm: React.FC = () => {
         const rows = await window.db.searchCustomersByPhone?.(phone.trim(), 20);
         setSuggestions(rows ?? []);
         setOpen((rows?.length ?? 0) > 0);
-        const exact = (rows ?? []).find(r => r.phone === phone.trim());
-        if (exact) {
-          if (!name) setName(exact.name);
-          if (!address) setAddress(exact.address);
-        }
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     }, 200);
     return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
   }, [phone]);
+
+  // Exact match auto-fill if name/address are empty
+  useEffect(() => {
+    if (!phone) return;
+    const exact = suggestions.find(r => r.phone === phone.trim());
+    if (exact) {
+      if (!name) setName(exact.name);
+      if (!address) setAddress(exact.address);
+    }
+  }, [phone, suggestions, name, address]);
 
   // Close suggestions on outside click
   useEffect(() => {

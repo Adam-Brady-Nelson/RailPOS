@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useConfirm } from './ConfirmProvider';
 
 type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -10,6 +11,7 @@ const MenuManager: React.FC = () => {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loadingCats, setLoadingCats] = useState(true);
   const [loadingDishes, setLoadingDishes] = useState(false);
+  const confirm = useConfirm();
 
   const loadCategories = useCallback(async () => {
     setLoadingCats(true);
@@ -56,7 +58,12 @@ const MenuManager: React.FC = () => {
     try { await window.db.updateCategory(cat.id, name.trim()); } catch (e) { console.error(e); alert('Failed to rename category'); }
   };
   const deleteCategory = async (cat: Category) => {
-    if (!confirm(`Delete category "${cat.name}" and all its dishes?`)) return;
+    const choice = await confirm({
+      message: 'Delete category?',
+      detail: `Delete “${cat.name}” and all its dishes? This cannot be undone.`,
+      buttons: ['Cancel', 'Delete']
+    });
+    if (choice !== 1) return;
     try { await window.db.deleteCategory(cat.id); if (selectedCategory === cat.id) setSelectedCategory(null); } catch (e) { console.error(e); alert('Failed to delete category'); }
   };
 
@@ -80,7 +87,8 @@ const MenuManager: React.FC = () => {
     try { await window.db.updateDish(dish.id, { name: name.trim(), price, category_id: selectedCategory ?? dish.category_id }); } catch (e) { console.error(e); alert('Failed to update dish'); }
   };
   const deleteDish = async (dish: Dish) => {
-    if (!confirm(`Delete dish "${dish.name}"?`)) return;
+    const choice = await confirm({ message: 'Delete item?', detail: `Delete “${dish.name}”?`, buttons: ['Cancel', 'Delete'] });
+    if (choice !== 1) return;
     try { await window.db.deleteDish(dish.id); } catch (e) { console.error(e); alert('Failed to delete dish'); }
   };
 

@@ -137,9 +137,9 @@ ipcMain.handle('get-orders-today', async () => {
 ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   const odb = getOrdersDb();
   const order = odb.prepare(`
-    SELECT id, customer_id, phone_id, status, created_at
+    SELECT id, customer_id, phone_id, status, payment_method, created_at
     FROM orders WHERE id = ?
-  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; created_at:string } | undefined;
+  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; payment_method: string | null; created_at:string } | undefined;
   if (!order) return null;
 
   const items = odb.prepare(`
@@ -167,7 +167,7 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   }
 
   return {
-    order: { id: order.id, status: order.status, phone_id: order.phone_id, created_at: order.created_at },
+    order: { id: order.id, status: order.status, phone_id: order.phone_id, payment_method: order.payment_method, created_at: order.created_at },
     customer,
     items: items.map(it => ({ dish_id: it.dish_id, name: names.get(it.dish_id) ?? `Dish #${it.dish_id}` , quantity: it.quantity, price: it.price })),
     subtotal,
@@ -263,10 +263,11 @@ ipcMain.handle('create-or-update-customer', async (_e, customer: { name: string;
 });
 
 // New: create order with items at checkout
-ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => {
+ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => {
   try {
     const odb = getOrdersDb();
-    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id) VALUES (?, ?)').run(payload.customerId, payload.phoneId);
+    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, payment_method, status) VALUES (?, ?, ?, ?)')
+      .run(payload.customerId, payload.phoneId, payload.payment_method ?? null, payload.payment_method ? 'paid' : 'pending');
     const orderId = orderInfo.lastInsertRowid as number;
     if (payload.items && payload.items.length > 0) {
       const stmt = odb.prepare('INSERT INTO order_items (order_id, dish_id, quantity, price) VALUES (?, ?, ?, ?)');
@@ -282,6 +283,31 @@ ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: numb
     throw new Error(`CREATE_ORDER_FAILED: ${msg}`);
   }
 });
+
+ipcMain.handle('finalize-payment', async (_e, payload: { orderId: number; payment_method: 'cash' | 'card' }) => {
+  const odb = getOrdersDb();
+  const info = odb.prepare('UPDATE orders SET payment_method = ?, status = ? WHERE id = ?')
+    .run(payload.payment_method, 'paid', payload.orderId);
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'update', id: payload.orderId }));
+  return info.changes > 0;
+})
+
+ipcMain.handle('get-revenue-breakdown-today', async () => {
+  const odb = getOrdersDb();
+  const rows = odb.prepare(`
+    SELECT o.payment_method AS method, COALESCE(SUM(oi.quantity * oi.price), 0) AS amount
+    FROM orders o
+    LEFT JOIN order_items oi ON oi.order_id = o.id
+    WHERE date(o.created_at, 'localtime') = date('now', 'localtime')
+      AND o.payment_method IN ('cash', 'card')
+      AND o.status = 'paid'
+    GROUP BY o.payment_method
+  `).all() as Array<{ method: 'cash' | 'card'; amount: number }>;
+  const result = { cash: 0, card: 0, total: 0 } as { cash: number; card: number; total: number };
+  for (const r of rows) { (result as any)[r.method] = r.amount; }
+  result.total = result.cash + result.card;
+  return result;
+})
 
 // Shift controls
 ipcMain.handle('start-shift', async () => {

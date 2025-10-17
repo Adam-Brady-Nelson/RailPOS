@@ -43,6 +43,7 @@ const OrderScreen: React.FC = () => {
 
   const itemsList = useMemo(() => Object.values(orderItems), [orderItems]);
   const subtotal = useMemo(() => itemsList.reduce((s, it) => s + it.price * it.qty, 0), [itemsList]);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | null>(null);
 
   // Helpers
   const loadCategories = useCallback(async () => {
@@ -163,37 +164,63 @@ const OrderScreen: React.FC = () => {
         </button>
       </div>
       <div style={{ position: 'fixed', bottom: BOTTOM_BAR_HEIGHT + 12, right: ASIDE_WIDTH + 24 + 12, zIndex: 1100 }}>
-        <button
-          onClick={async () => {
-            const amount = subtotal;
-            const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
-            try {
-              if (isEditingExisting) {
+        {isEditingExisting ? (
+          <button
+            onClick={async () => {
+              const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+              try {
                 await window.db.updateOrderItems({ orderId: Number(orderId), items });
                 navigate('/orders');
-                return;
-              }
-              // If we arrived via CustomerForm (no order yet), create it now
-              if (pending?.customerId && pending?.phoneId) {
-                await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items });
-              }
-            } catch (e) {
-              console.error(e);
-            }
-            navigate('/', { state: { orderPlaced: { amount } } });
-          }}
-          style={{
-            padding: '10px 16px',
-            background: '#10b981',
-            color: '#ffffff',
-            borderRadius: 8,
-            border: '1px solid #10b981',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          {isEditingExisting ? 'Save Changes' : `Checkout ($${subtotal.toFixed(2)})`}
-        </button>
+              } catch (e) { console.error(e); }
+            }}
+            style={{
+              padding: '10px 16px',
+              background: '#10b981',
+              color: '#ffffff',
+              borderRadius: 8,
+              border: '1px solid #10b981',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Save Changes
+          </button>
+        ) : (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={async () => {
+                setPaymentMethod('cash');
+                const amount = subtotal;
+                const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+                try {
+                  if (pending?.customerId && pending?.phoneId) {
+                    await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'cash' });
+                  }
+                } catch (e) { console.error(e); }
+                navigate('/', { state: { orderPlaced: { amount } } });
+              }}
+              style={{ padding: '10px 16px', background: '#111827', color: '#fff', borderRadius: 8, border: '1px solid #111827', fontWeight: 600, cursor: 'pointer' }}
+            >
+              Cash (${subtotal.toFixed(2)})
+            </button>
+            <button
+              onClick={async () => {
+                setPaymentMethod('card');
+                const amount = subtotal;
+                const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+                try {
+                  if (pending?.customerId && pending?.phoneId) {
+                    await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'card' });
+                  }
+                } catch (e) { console.error(e); }
+                navigate('/', { state: { orderPlaced: { amount } } });
+              }}
+              style={{ padding: '10px 16px', background: '#2563eb', color: '#fff', borderRadius: 8, border: '1px solid #2563eb', fontWeight: 600, cursor: 'pointer' }}
+            >
+              Card (${subtotal.toFixed(2)})
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Right order panel */}
@@ -241,6 +268,9 @@ const OrderScreen: React.FC = () => {
             <span>Total</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
+          {isEditingExisting && (
+            <div className="text-sm text-gray-600 mt-1">Payment: <strong>{paymentMethod ?? '—'}</strong></div>
+          )}
         </div>
       </aside>
 

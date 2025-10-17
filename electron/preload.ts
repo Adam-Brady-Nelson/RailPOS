@@ -13,17 +13,19 @@ declare global {
       deleteDish: (id: number) => Promise<number>
       createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => Promise<{ customerId: number, orderId: number }>
   createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => Promise<{ customerId: number }>
-  createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => Promise<{ orderId: number }>
+  createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => Promise<{ orderId: number }>
       getOrdersToday: () => Promise<Array<{ id: number; created_at: string; status: string; phone_id: number; customer_name?: string; customer_phone?: string; total: number }>>
       getDailyTotals: () => Promise<{ total: number; orders: number }>
+      getRevenueBreakdownToday: () => Promise<{ cash: number; card: number; total: number }>
       getOrderDetails: (orderId: number) => Promise<{
-        order: { id:number; status:string; phone_id:number; created_at:string },
+        order: { id:number; status:string; phone_id:number; payment_method: string | null; created_at:string },
         customer: { id:number; name:string; phone:string } | null,
         items: Array<{ dish_id:number; name:string; quantity:number; price:number }>,
         subtotal: number
       } | null>
       searchCustomersByPhone: (query: string, limit?: number) => Promise<Array<{ id:number; name:string; phone:string; address:string }>>
       updateOrderItems: (payload: { orderId: number; items: Array<{ dish_id:number; quantity:number; price:number }> }) => Promise<boolean>
+      finalizePayment: (payload: { orderId: number; payment_method: 'cash' | 'card' }) => Promise<boolean>
       startShift: () => Promise<{ path: string; date: string }>
       getCurrentShift: () => Promise<{ path: string; date: string } | null>
   closeShift: () => Promise<boolean>
@@ -43,12 +45,14 @@ contextBridge.exposeInMainWorld('db', {
   deleteDish: (id: number) => ipcRenderer.invoke('delete-dish', id),
   createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => ipcRenderer.invoke('create-customer-and-order', payload),
   createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => ipcRenderer.invoke('create-or-update-customer', customer),
-  createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => ipcRenderer.invoke('create-order-with-items', payload),
+  createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => ipcRenderer.invoke('create-order-with-items', payload),
   getOrdersToday: () => ipcRenderer.invoke('get-orders-today'),
   getDailyTotals: () => ipcRenderer.invoke('get-daily-totals'),
+  getRevenueBreakdownToday: () => ipcRenderer.invoke('get-revenue-breakdown-today'),
   getOrderDetails: (orderId: number) => ipcRenderer.invoke('get-order-details', orderId),
   searchCustomersByPhone: (query: string, limit?: number) => ipcRenderer.invoke('search-customers-by-phone', query, limit),
   updateOrderItems: (payload: { orderId: number; items: Array<{ dish_id:number; quantity:number; price:number }> }) => ipcRenderer.invoke('update-order-items', payload),
+  finalizePayment: (payload: { orderId: number; payment_method: 'cash' | 'card' }) => ipcRenderer.invoke('finalize-payment', payload),
   startShift: () => ipcRenderer.invoke('start-shift'),
   getCurrentShift: () => ipcRenderer.invoke('get-current-shift'),
   closeShift: () => ipcRenderer.invoke('close-shift'),

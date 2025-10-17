@@ -56,6 +56,7 @@ export function startNewShift(): ShiftInfo {
       customer_id INTEGER,
       phone_id INTEGER,
       status TEXT NOT NULL DEFAULT 'pending',
+      payment_method TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE IF NOT EXISTS order_items (
@@ -80,6 +81,16 @@ export function getOrdersDb(): BetterSqlite3Database {
   const info = getCurrentShift();
   if (!info) throw new Error('NO_ACTIVE_SHIFT');
   ordersDb = new Database(info.path, { verbose: console.log });
+  // Ensure schema migrations for existing shift DBs
+  try {
+    const cols = ordersDb.prepare("PRAGMA table_info('orders')").all() as Array<{ name: string }>
+    const hasPaymentMethod = cols.some(c => c.name === 'payment_method');
+    if (!hasPaymentMethod) {
+      ordersDb.exec("ALTER TABLE orders ADD COLUMN payment_method TEXT");
+    }
+  } catch (e) {
+    console.warn('[DB] Orders schema migration check failed:', e);
+  }
   return ordersDb;
 }
 

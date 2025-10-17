@@ -182,38 +182,25 @@ const MainScreen: React.FC = () => {
           zIndex: 50,
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 12 }}>
-          <Link
-            to="/orders"
-            style={{
-              padding: '10px 16px',
-              background: '#111827',
-              color: '#ffffff',
-              borderRadius: 8,
-              border: '1px solid #111827',
-              cursor: 'pointer',
-              fontWeight: 600,
-              textDecoration: 'none',
-              display: 'inline-block'
-            }}
-          >
-            Order List
-          </Link>
-          <button
-            type="button"
-            style={{
-              padding: '10px 16px',
-              background: '#374151',
-              color: '#ffffff',
-              borderRadius: 8,
-              border: '1px solid #374151',
-              cursor: 'pointer',
-              fontWeight: 600,
-            }}
-          >
-            Daily totals
-          </button>
-        </div>
+        {(() => {
+          const navBtnStyle: React.CSSProperties = {
+            padding: '10px 16px',
+            background: '#111827',
+            color: '#ffffff',
+            borderRadius: 8,
+            border: '1px solid #111827',
+            cursor: 'pointer',
+            fontWeight: 600,
+            display: 'inline-block',
+            textDecoration: 'none',
+          };
+          return (
+            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 12 }}>
+              <Link to="/orders" style={navBtnStyle}>Order List</Link>
+              <button type="button" style={navBtnStyle}>Daily totals</button>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

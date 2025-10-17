@@ -4,6 +4,7 @@ import MainScreen from './components/MainScreen';
 import CustomerForm from './components/CustomerForm';
 import OrderScreen from './components/OrderScreen';
 import OrderList from './components/OrderList';
+import DailyTotals from './components/DailyTotals';
 
 const App: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const App: React.FC = () => {
   <Route path="/order/:orderId" element={<OrderScreen />} />
   <Route path="/order/new" element={<OrderScreen />} />
         <Route path="/orders" element={<OrderList />} />
+        <Route path="/totals" element={<DailyTotals />} />
       </Routes>
     </Router>
   );

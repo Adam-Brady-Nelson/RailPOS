@@ -15,6 +15,7 @@ declare global {
   createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => Promise<{ customerId: number }>
   createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => Promise<{ orderId: number }>
       getOrdersToday: () => Promise<Array<{ id: number; created_at: string; status: string; phone_id: number; customer_name?: string; customer_phone?: string; total: number }>>
+      getDailyTotals: () => Promise<{ total: number; orders: number }>
       getOrderDetails: (orderId: number) => Promise<{
         order: { id:number; status:string; phone_id:number; created_at:string },
         customer: { id:number; name:string; phone:string } | null,
@@ -44,6 +45,7 @@ contextBridge.exposeInMainWorld('db', {
   createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => ipcRenderer.invoke('create-or-update-customer', customer),
   createOrderWithItems: (payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }> }) => ipcRenderer.invoke('create-order-with-items', payload),
   getOrdersToday: () => ipcRenderer.invoke('get-orders-today'),
+  getDailyTotals: () => ipcRenderer.invoke('get-daily-totals'),
   getOrderDetails: (orderId: number) => ipcRenderer.invoke('get-order-details', orderId),
   searchCustomersByPhone: (query: string, limit?: number) => ipcRenderer.invoke('search-customers-by-phone', query, limit),
   updateOrderItems: (payload: { orderId: number; items: Array<{ dish_id:number; quantity:number; price:number }> }) => ipcRenderer.invoke('update-order-items', payload),

@@ -197,7 +197,7 @@ const MainScreen: React.FC = () => {
           return (
             <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 12 }}>
               <Link to="/orders" style={navBtnStyle}>Order List</Link>
-              <button type="button" style={navBtnStyle}>Daily totals</button>
+              <Link to="/totals" style={navBtnStyle}>Daily totals</Link>
             </div>
           );
         })()}

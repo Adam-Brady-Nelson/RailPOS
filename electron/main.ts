@@ -174,6 +174,20 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   };
 })
 
+// Daily totals for current day (local time)
+ipcMain.handle('get-daily-totals', async () => {
+  const odb = getOrdersDb();
+  const row = odb.prepare(`
+    SELECT 
+      COALESCE(SUM(oi.quantity * oi.price), 0) AS total,
+      COUNT(DISTINCT o.id) AS orders
+    FROM orders o
+    LEFT JOIN order_items oi ON oi.order_id = o.id
+    WHERE date(o.created_at, 'localtime') = date('now', 'localtime')
+  `).get() as { total: number | null; orders: number | null } | undefined;
+  return { total: Number(row?.total ?? 0), orders: Number(row?.orders ?? 0) };
+})
+
 // Update items for an existing order
 ipcMain.handle('update-order-items', async (_e, payload: { orderId: number; items: Array<{ dish_id:number; quantity:number; price:number }> }) => {
   const odb = getOrdersDb();

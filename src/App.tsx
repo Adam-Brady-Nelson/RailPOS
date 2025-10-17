@@ -6,6 +6,7 @@ import OrderScreen from './components/OrderScreen';
 import OrderList from './components/OrderList';
 import DailyTotals from './components/DailyTotals';
 import Setup from './components/Setup';
+import MenuManager from './components/MenuManager';
 
 const App: React.FC = () => {
   return (
@@ -18,6 +19,7 @@ const App: React.FC = () => {
         <Route path="/orders" element={<OrderList />} />
         <Route path="/totals" element={<DailyTotals />} />
         <Route path="/setup" element={<Setup />} />
+        <Route path="/menu" element={<MenuManager />} />
       </Routes>
     </Router>
   );

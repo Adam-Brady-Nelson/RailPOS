@@ -303,8 +303,12 @@ ipcMain.handle('get-revenue-breakdown-today', async () => {
       AND o.status = 'paid'
     GROUP BY o.payment_method
   `).all() as Array<{ method: 'cash' | 'card'; amount: number }>;
-  const result = { cash: 0, card: 0, total: 0 } as { cash: number; card: number; total: number };
-  for (const r of rows) { (result as any)[r.method] = r.amount; }
+  const result: { cash: number; card: number; total: number } = { cash: 0, card: 0, total: 0 };
+  for (const r of rows) {
+    if (r.method === 'cash' || r.method === 'card') {
+      result[r.method] = r.amount;
+    }
+  }
   result.total = result.cash + result.card;
   return result;
 })

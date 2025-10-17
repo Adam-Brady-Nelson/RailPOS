@@ -53,7 +53,7 @@ const MainScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+  <div className="min-h-screen bg-gray-100" style={{ overflowY: 'hidden' }}>
       <div className="max-w-6xl mx-auto pt-12 px-4">
         <h1 className="text-5xl font-extrabold text-center mb-10">RailPOS</h1>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, gap: 16 }}>
@@ -174,12 +174,14 @@ const MainScreen: React.FC = () => {
         style={{
           position: 'fixed',
           left: 0,
+          right: 0,
           bottom: 0,
-          width: '100%',
           background: '#ffffff',
           borderTop: '1px solid #e5e7eb',
           padding: '12px 16px',
           zIndex: 50,
+          boxSizing: 'border-box',
+          overflowX: 'hidden',
         }}
       >
         {(() => {
@@ -195,9 +197,14 @@ const MainScreen: React.FC = () => {
             textDecoration: 'none',
           };
           return (
-            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 12 }}>
-              <Link to="/orders" style={navBtnStyle}>Order List</Link>
-              <Link to="/totals" style={navBtnStyle}>Daily totals</Link>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <Link to="/orders" style={navBtnStyle}>Order List</Link>
+                <Link to="/totals" style={navBtnStyle}>Daily totals</Link>
+              </div>
+              <div style={{ marginLeft: 'auto' }}>
+                <Link to="/setup" style={navBtnStyle}>Setup</Link>
+              </div>
             </div>
           );
         })()}

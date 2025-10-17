@@ -48,11 +48,11 @@ A modern Point of Sale (POS) system for restaurants built with React, Vite, Elec
 
 # To Fix
 - Fix DB, still doesn't meet planned spec (Later date for proper spec introduction)
-- Order gets placed as soon as the customer is selected from CustomerForm.tsx
+- [x] Order gets placed as soon as the customer is selected from CustomerForm.tsx
 - Order Screen is completely mislabelled.
-- Order screen list selected items.
+- [x] Order screen list selected items.
 - Order list add comments to items.
-- Add buttons to show cash/card payment.
+- [x] Add buttons to show cash/card payment.
 - Implement final order check screen
 
 # Main goals

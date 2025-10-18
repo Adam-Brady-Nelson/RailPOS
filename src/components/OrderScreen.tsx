@@ -18,6 +18,7 @@ const OrderScreen: React.FC = () => {
   const [loadingCats, setLoadingCats] = useState(true);
   const [loadingDishes, setLoadingDishes] = useState(false);
   const [orderItems, setOrderItems] = useState<Record<number, { id:number; name:string; price:number; qty:number }>>({});
+  const [itemsOrder, setItemsOrder] = useState<number[]>([]); // Track insertion order
   const isEditingExisting = !!orderId && orderId !== 'new';
   const [loadingExisting, setLoadingExisting] = useState<boolean>(false);
 
@@ -27,21 +28,35 @@ const OrderScreen: React.FC = () => {
       const nextQty = curr ? curr.qty + 1 : 1;
       return { ...prev, [dish.id]: { id: dish.id, name: dish.name, price: dish.price, qty: nextQty } };
     });
+    // Add to order tracking if it's a new item
+    setItemsOrder((prev) => {
+      if (!prev.includes(dish.id)) {
+        return [...prev, dish.id];
+      }
+      return prev;
+    });
   };
   const removeOne = (id: number) => {
     setOrderItems((prev) => {
       const curr = prev[id];
       if (!curr) return prev;
       const next = { ...prev };
-      if (curr.qty <= 1) delete next[id]; else next[id] = { ...curr, qty: curr.qty - 1 };
+      if (curr.qty <= 1) {
+        delete next[id];
+        // Remove from order tracking
+        setItemsOrder((prevOrder) => prevOrder.filter(itemId => itemId !== id));
+      } else {
+        next[id] = { ...curr, qty: curr.qty - 1 };
+      }
       return next;
     });
   };
   const clearItem = (id: number) => {
     setOrderItems((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    setItemsOrder((prev) => prev.filter(itemId => itemId !== id));
   };
 
-  const itemsList = useMemo(() => Object.values(orderItems), [orderItems]);
+  const itemsList = useMemo(() => itemsOrder.map(id => orderItems[id]).filter(Boolean), [itemsOrder, orderItems]);
   const subtotal = useMemo(() => itemsList.reduce((s, it) => s + it.price * it.qty, 0), [itemsList]);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | null>(null);
 
@@ -94,10 +109,13 @@ const OrderScreen: React.FC = () => {
         if (!details || ignore) return;
         // Populate items
         const next: Record<number, { id:number; name:string; price:number; qty:number }> = {};
+        const order: number[] = [];
         for (const it of details.items) {
           next[it.dish_id] = { id: it.dish_id, name: it.name, price: it.price, qty: it.quantity };
+          order.push(it.dish_id);
         }
         setOrderItems(next);
+        setItemsOrder(order);
       } catch (e) {
         console.error(e);
       } finally {

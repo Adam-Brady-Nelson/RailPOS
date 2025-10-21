@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import CustomerInputs from '../components/CustomerInputs';
+import './CustomerForm.css';
+import BackButton from '../components/BackButton';
 
 const CustomerForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -73,75 +76,23 @@ const CustomerForm: React.FC = () => {
 
   return (
     <div className="p-4" ref={containerRef}>
-      <div style={{ marginBottom: 12 }}>
-        <Link
-          to="/"
-          style={{
-            padding: '8px 12px',
-            background: '#111827',
-            color: '#ffffff',
-            borderRadius: 8,
-            border: '1px solid #111827',
-            fontWeight: 600,
-            textDecoration: 'none',
-            display: 'inline-block'
-          }}
-        >
-          ← Back
-        </Link>
+      <div className="back-link-wrap">
+        <BackButton to="/">← Back</BackButton>
       </div>
       <h1 className="text-2xl font-bold mb-4">Customer Information (Phone {phoneId})</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="name" className="block">Customer Name</label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border rounded px-3 py-3 text-lg"
-            style={{ height: 56 }}
-          />
-        </div>
-        <div className="relative">
-          <label htmlFor="phone" className="block">Phone Number</label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full border rounded px-3 py-3 text-lg"
-            style={{ height: 56 }}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="address" className="block">Address</label>
-          <textarea
-            id="address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full border rounded px-3 py-3 text-lg"
-            style={{ minHeight: 56 }}
-          />
-        </div>
+        <CustomerInputs
+          name={name}
+          phone={phone}
+          address={address}
+          onNameChange={setName}
+          onPhoneChange={setPhone}
+          onAddressChange={setAddress}
+        />
         <div className="flex justify-center mt-6 mb-2">
           <button
             type="submit"
-            className="px-8 py-4 text-2xl font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition-transform active:scale-[0.98]"
-            style={{
-              minWidth: 420,
-              height: 72,
-              fontSize: 28,
-              borderRadius: 12,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: '#2563eb',
-              color: '#ffffff',
-              border: '1px solid #1d4ed8',
-              boxShadow: '0 8px 20px rgba(37,99,235,0.3)'
-            }}
+            className="customer-submit-btn px-8 py-4 text-2xl font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition-transform active:scale-[0.98]"
           >
             Create Order
           </button>
@@ -166,8 +117,7 @@ const CustomerForm: React.FC = () => {
               suggestions.map(s => (
                 <tr
                   key={s.id}
-                  className="hover:bg-gray-50 cursor-pointer select-none"
-                  style={{ height: 56 }}
+                  className="hover:bg-gray-50 cursor-pointer select-none suggestion-row"
                   onClick={() => choose(s)}
                 >
                   <td className="border px-3 py-3 text-base">{s.name}</td>

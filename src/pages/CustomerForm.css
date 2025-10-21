@@ -1,0 +1,25 @@
+/* CustomerForm page-specific styles */
+
+.back-link-wrap {
+  margin-bottom: 12px;
+}
+
+/* Back button styles moved to src/components/BackButton.css */
+
+.customer-submit-btn {
+  min-width: 420px;
+  height: 72px;
+  font-size: 28px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2563eb;
+  color: #ffffff;
+  border: 1px solid #1d4ed8;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+}
+
+.suggestion-row {
+  height: 56px;
+}

@@ -6,7 +6,7 @@ import OrderScreen from './components/OrderScreen';
 import OrderList from './pages/OrderList';
 import DailyTotals from './pages/DailyTotals';
 import Setup from './pages/Setup';
-import MenuManager from './components/MenuManager';
+import MenuManager from './pages/MenuManager';
 
 const App: React.FC = () => {
   return (

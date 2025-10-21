@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useConfirm } from './ConfirmProvider';
+import { useConfirm } from '../components/ConfirmProvider';
+import CategoriesPanel, { Category } from '../components/CategoriesPanel';
 
-type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
 
 const MenuManager: React.FC = () => {
@@ -127,31 +127,15 @@ const MenuManager: React.FC = () => {
       </div>
       <h1 className="text-2xl font-bold mb-4">Manage Menu</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <section className="md:col-span-1">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Categories</h2>
-            <button onClick={openAddCategory} className="px-3 py-1 rounded bg-blue-600 text-white border border-blue-600 hover:bg-blue-700">+ Add</button>
-          </div>
-          <ul className="space-y-2">
-            {loadingCats ? (
-              <li>Loading…</li>
-            ) : categories.length === 0 ? (
-              <li className="text-gray-600">No categories yet.</li>
-            ) : (
-              categories.map(cat => (
-                <li key={cat.id} className={`flex items-center justify-between border rounded p-2 ${selectedCategory === cat.id ? 'bg-blue-50 border-blue-300' : 'bg-white'}`}>
-                  <button onClick={() => setSelectedCategory(cat.id)} className="text-left font-medium flex-1">
-                    {cat.name}
-                  </button>
-                  <div className="flex items-center gap-2 ml-2">
-                    <button onClick={() => openRenameCategory(cat)} className="px-2 py-1 text-sm rounded border">Rename</button>
-                    <button onClick={() => deleteCategory(cat)} className="px-2 py-1 text-sm rounded border border-red-300 text-red-700">Delete</button>
-                  </div>
-                </li>
-              ))
-            )}
-          </ul>
-        </section>
+        <CategoriesPanel
+          categories={categories}
+          loading={loadingCats}
+          selectedId={selectedCategory}
+          onSelect={(id) => setSelectedCategory(id)}
+          onAdd={openAddCategory}
+          onRename={openRenameCategory}
+          onDelete={deleteCategory}
+        />
         <section className="md:col-span-2">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-semibold">Items in “{selectedCatName}”</h2>

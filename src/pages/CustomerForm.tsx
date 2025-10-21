@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import CustomerInputs from '../components/CustomerInputs';
 import './CustomerForm.css';
 import BackButton from '../components/BackButton';
+import CreateOrderButton from '../components/CreateOrderButton';
 
 const CustomerForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -90,12 +91,7 @@ const CustomerForm: React.FC = () => {
           onAddressChange={setAddress}
         />
         <div className="flex justify-center mt-6 mb-2">
-          <button
-            type="submit"
-            className="customer-submit-btn px-8 py-4 text-2xl font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition-transform active:scale-[0.98]"
-          >
-            Create Order
-          </button>
+          <CreateOrderButton />
         </div>
       </form>
       {/* Suggestions Table */}

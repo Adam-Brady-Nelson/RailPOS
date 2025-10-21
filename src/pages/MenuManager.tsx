@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useConfirm } from '../components/ConfirmProvider';
+import BackButton from '../components/BackButton';
 import CategoriesPanel, { Category } from '../components/CategoriesPanel';
 
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -108,22 +108,7 @@ const MenuManager: React.FC = () => {
   return (
     <div className="p-4">
       <div style={{ marginBottom: 12 }}>
-        <Link
-          to="/setup"
-          style={{
-            padding: '8px 12px',
-            background: '#111827',
-            color: '#ffffff',
-            borderRadius: 8,
-            border: '1px solid #111827',
-            cursor: 'pointer',
-            fontWeight: 600,
-            textDecoration: 'none',
-            display: 'inline-block'
-          }}
-        >
-          ← Back to Setup
-        </Link>
+        <BackButton to="/setup">← Back to Setup</BackButton>
       </div>
       <h1 className="text-2xl font-bold mb-4">Manage Menu</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

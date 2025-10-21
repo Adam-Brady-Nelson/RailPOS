@@ -3,7 +3,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import MainScreen from './pages/MainScreen';
 import CustomerForm from './pages/CustomerForm';
 import OrderScreen from './components/OrderScreen';
-import OrderList from './components/OrderList';
+import OrderList from './pages/OrderList';
 import DailyTotals from './components/DailyTotals';
 import Setup from './components/Setup';
 import MenuManager from './components/MenuManager';

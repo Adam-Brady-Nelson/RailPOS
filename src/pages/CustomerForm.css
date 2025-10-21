@@ -8,6 +8,4 @@
 
 /* Submit button styles moved to src/components/CreateOrderButton.css */
 
-.suggestion-row {
-  height: 56px;
-}
+/* Suggestion row height moved to src/components/SuggestionsTable.css */

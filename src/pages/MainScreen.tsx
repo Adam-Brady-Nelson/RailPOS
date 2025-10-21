@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useConfirm } from '../components/ConfirmProvider';
 import BottomNav from '../components/BottomNav';
+import ShiftControls from '../components/ShiftControls';
 
 const MainScreen: React.FC = () => {
   const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
   const confirm = useConfirm();
-  const [busy, setBusy] = useState(false);
   const location = useLocation() as unknown as { state: { orderPlaced?: { amount: number } } | null };
 
   useEffect(() => {
@@ -30,86 +30,11 @@ const MainScreen: React.FC = () => {
     }
   }, [location?.state, confirm]);
 
-  const handleStartShift = async () => {
-    if (busy) return;
-    // Guard for browser live view where preload isn't available
-    if (!('db' in window) || typeof window.db.startShift !== 'function') {
-      await confirm({
-        message: 'Start Shift unavailable in browser',
-        detail: 'This action requires the Electron runtime. Run "npm run dev" and use the Electron window.',
-        buttons: ['OK']
-      });
-      return;
-    }
-    const response = await confirm({ message: 'Start a new shift?', detail: 'This will create a new orders database for today.', buttons: ['Cancel', 'Start Shift'] });
-    if (response !== 1) return;
-    try {
-      setBusy(true);
-      const info = await window.db.startShift();
-      setShift(info);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Failed to start shift.';
-      await confirm({ message: 'Failed to start shift', detail: msg, buttons: ['OK'] });
-    } finally { setBusy(false); }
-  };
-
   return (
     <div className="min-h-screen bg-gray-100" style={{ overflowY: 'hidden' }}>
       <div className="max-w-6xl mx-auto pt-12 px-4">
         <h1 className="text-5xl font-extrabold text-center mb-10">RailPOS</h1>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, gap: 16 }}>
-          <button
-            onClick={handleStartShift}
-            disabled={!!shift}
-            style={{
-              padding: '8px 14px',
-              background: shift ? '#9ca3af' : '#2563eb',
-              color: '#fff',
-              borderRadius: 8,
-              border: '1px solid ' + (shift ? '#9ca3af' : '#2563eb'),
-              cursor: shift ? 'not-allowed' : 'pointer',
-              fontWeight: 600,
-            }}
-          >
-            {shift ? `Shift active (${shift.date})` : 'Start Shift'}
-          </button>
-          <button
-            onClick={async () => {
-              if (busy) return;
-              // Guard for browser live view where preload isn't available
-              if (!('db' in window) || typeof window.db.closeShift !== 'function') {
-                await confirm({
-                  message: 'Close Shift unavailable in browser',
-                  detail: 'This action requires the Electron runtime. Run "npm run dev" and use the Electron window.',
-                  buttons: ['OK']
-                });
-                return;
-              }
-              const response = await confirm({ message: 'Close the current shift?', detail: 'This will disable order entry until a new shift is started.', buttons: ['Cancel', 'Close Shift'] });
-              if (response !== 1) return;
-              try {
-                setBusy(true);
-                await window.db.closeShift();
-                setShift(null);
-              } catch (e: unknown) {
-                const msg = e instanceof Error ? e.message : 'Failed to close shift.';
-                await confirm({ message: 'Failed to close shift', detail: msg, buttons: ['OK'] });
-              } finally { setBusy(false); }
-            }}
-            disabled={!shift}
-            style={{
-              padding: '8px 14px',
-              background: !shift ? '#9ca3af' : '#ef4444',
-              color: '#fff',
-              borderRadius: 8,
-              border: '1px solid ' + (!shift ? '#9ca3af' : '#ef4444'),
-              cursor: !shift ? 'not-allowed' : 'pointer',
-              fontWeight: 600,
-            }}
-          >
-            Close Shift
-          </button>
-        </div>
+        <ShiftControls shift={shift} onShiftChange={setShift} />
         <div className="flex justify-center" style={{ gap: '6rem' }}>
           <Link
             to="/customer-form/1"

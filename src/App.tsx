@@ -5,7 +5,7 @@ import CustomerForm from './pages/CustomerForm';
 import OrderScreen from './components/OrderScreen';
 import OrderList from './pages/OrderList';
 import DailyTotals from './pages/DailyTotals';
-import Setup from './components/Setup';
+import Setup from './pages/Setup';
 import MenuManager from './components/MenuManager';
 
 const App: React.FC = () => {

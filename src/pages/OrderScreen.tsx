@@ -10,6 +10,8 @@ type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
 
 const BOTTOM_BAR_HEIGHT = 96; // px
+const CATEGORIES_HEIGHT = 112; // px, slightly larger
+const GAP_ABOVE_CHECKOUT = 12; // px gap above checkout buttons
 const ASIDE_WIDTH = 380; // px right panel
 
 const OrderScreen: React.FC = () => {
@@ -218,7 +220,8 @@ const OrderScreen: React.FC = () => {
         categories={categories}
         selectedCategoryId={selectedCategory}
         onSelect={(id) => setSelectedCategory(id)}
-        height={BOTTOM_BAR_HEIGHT}
+        height={CATEGORIES_HEIGHT}
+        bottomOffset={BOTTOM_BAR_HEIGHT + GAP_ABOVE_CHECKOUT}
       />
     </div>
   );

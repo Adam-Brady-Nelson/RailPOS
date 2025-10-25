@@ -8,11 +8,12 @@ interface Props {
   selectedCategoryId: number | null;
   onSelect: (id: number) => void;
   height?: number; // px
+  bottomOffset?: number; // px distance from bottom (to sit above checkout)
 }
 
-const CategoriesNavBar: React.FC<Props> = ({ categories, selectedCategoryId, onSelect, height = 96 }) => {
+const CategoriesNavBar: React.FC<Props> = ({ categories, selectedCategoryId, onSelect, height = 112, bottomOffset = 0 }) => {
   return (
-    <div style={{ height }} className="fixed bottom-0 left-0 right-0 bg-white border-t z-20">
+    <div style={{ height, bottom: bottomOffset, position: 'fixed', left: 0, right: 0 }} className="bg-white border-t z-20">
       <div className="h-full overflow-x-auto">
         <div className="flex items-center gap-2 px-3 py-3 min-w-max">
           {categories.map((cat) => (

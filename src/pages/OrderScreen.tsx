@@ -4,6 +4,7 @@ import CategoriesNavBar from '../components/CategoriesNavBar';
 import ItemsGrid from '../components/ItemsGrid';
 import CheckoutControls from '../components/CheckoutControls';
 import OrderSummaryPanel from '../components/OrderSummaryPanel';
+import { useConfirm } from '../components/ConfirmProvider';
 
 type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -16,6 +17,7 @@ const OrderScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation() as unknown as { state?: { customerId?: number; phoneId?: number; customer?: { name:string; phone:string; address:string } } };
   const pending = location?.state;
+  const confirm = useConfirm();
   const [categories, setCategories] = useState<Category[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -162,6 +164,12 @@ const OrderScreen: React.FC = () => {
           } catch (e) { console.error(e); }
         }}
         onPayCash={async () => {
+          const confirmed = await confirm({
+            message: 'Confirm Order',
+            detail: `Place order for $${subtotal.toFixed(2)} via Cash?`,
+            buttons: ['Cancel', 'Place Order']
+          });
+          if (confirmed !== 1) return;
           setPaymentMethod('cash');
           const amount = subtotal;
           const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
@@ -173,6 +181,12 @@ const OrderScreen: React.FC = () => {
           navigate('/', { state: { orderPlaced: { amount } } });
         }}
         onPayCard={async () => {
+          const confirmed = await confirm({
+            message: 'Confirm Order',
+            detail: `Place order for $${subtotal.toFixed(2)} via Card?`,
+            buttons: ['Cancel', 'Place Order']
+          });
+          if (confirmed !== 1) return;
           setPaymentMethod('card');
           const amount = subtotal;
           const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));

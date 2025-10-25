@@ -1,5 +1,5 @@
 {
-  "name": "react-vite-electron-template",
+  "name": "railpos",
   "version": "0.1.0",
   "private": true,
   "main": "dist-electron/main.cjs",
@@ -43,7 +43,7 @@
       "target": [
         "nsis"
       ],
-      "publisherName": "Your Company"
+      "publisherName": "Rail"
     },
     "nsis": {
       "oneClick": false,

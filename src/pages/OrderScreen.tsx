@@ -131,6 +131,19 @@ const OrderScreen: React.FC = () => {
     return () => { ignore = true; };
   }, [isEditingExisting, orderId]);
 
+  // Back click with confirmation (without modifying BackButton)
+  const onBackClickCapture = useCallback<React.MouseEventHandler<HTMLDivElement>>(async (e) => {
+    e.preventDefault();
+    const idx = await confirm({
+      message: 'Are you sure you want to go back?',
+      detail: isEditingExisting ? 'Any unsaved changes will be lost.' : 'This new order will be discarded.',
+      buttons: ['Cancel', 'Go back']
+    });
+    if (idx === 1) {
+      navigate(isEditingExisting ? '/orders' : '/');
+    }
+  }, [confirm, isEditingExisting, navigate]);
+
   // grid columns are handled inside ItemsGrid
 
   if (loadingCats && categories.length === 0) return <div className="p-4">Loading menu…</div>;
@@ -158,6 +171,7 @@ const OrderScreen: React.FC = () => {
         bottomBarHeight={BOTTOM_BAR_HEIGHT}
         asideWidth={ASIDE_WIDTH + 24}
         backTo={isEditingExisting ? '/orders' : '/'}
+        onBackClick={onBackClickCapture}
         onSaveChanges={async () => {
           const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
           try {

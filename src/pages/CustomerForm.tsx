@@ -50,15 +50,7 @@ const CustomerForm: React.FC = () => {
     return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
   }, [phone]);
 
-  // Exact match auto-fill if name/address are empty
-  useEffect(() => {
-    if (!phone) return;
-    const exact = suggestions.find(r => r.phone === phone.trim());
-    if (exact) {
-      if (!name) setName(exact.name);
-      if (!address) setAddress(exact.address);
-    }
-  }, [phone, suggestions, name, address]);
+  // Removed exact match auto-fill: the form should only fill when a suggestion is clicked.
 
   // Close suggestions on outside click
   useEffect(() => {
@@ -73,7 +65,7 @@ const CustomerForm: React.FC = () => {
     setName(s.name);
     setPhone(s.phone);
     setAddress(s.address);
-    setOpen(false);
+    // Keep suggestions visible after selecting an entry
   };
 
   return (

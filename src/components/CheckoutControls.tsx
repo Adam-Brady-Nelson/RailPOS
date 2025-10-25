@@ -6,6 +6,7 @@ interface Props {
   bottomBarHeight: number;
   asideWidth: number;
   backTo: string;
+  onBackClick?: React.MouseEventHandler<HTMLDivElement>; // capture wrapper to allow confirmation without changing BackButton
   onSaveChanges?: () => void | Promise<void>;
   onPayCash?: () => void | Promise<void>;
   onPayCard?: () => void | Promise<void>;
@@ -17,6 +18,7 @@ const CheckoutControls: React.FC<Props> = ({
   bottomBarHeight,
   asideWidth,
   backTo,
+  onBackClick,
   onSaveChanges,
   onPayCash,
   onPayCard,
@@ -25,7 +27,7 @@ const CheckoutControls: React.FC<Props> = ({
   return (
     <>
       {/* Back button (standard component) */}
-      <div style={{ position: 'fixed', bottom: bottomBarHeight + 12, left: 12, zIndex: 1100 }}>
+      <div style={{ position: 'fixed', bottom: bottomBarHeight + 12, left: 12, zIndex: 1100 }} onClickCapture={onBackClick}>
         <BackButton to={backTo}>← Back</BackButton>
       </div>
 

@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CategoriesNavBar from '../components/CategoriesNavBar';
+import ItemsGrid from '../components/ItemsGrid';
+import CheckoutControls from '../components/CheckoutControls';
+import OrderSummaryPanel from '../components/OrderSummaryPanel';
 
 type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -124,7 +127,7 @@ const OrderScreen: React.FC = () => {
     return () => { ignore = true; };
   }, [isEditingExisting, orderId]);
 
-  const gridCols = useMemo(() => 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6', []);
+  // grid columns are handled inside ItemsGrid
 
   if (loadingCats && categories.length === 0) return <div className="p-4">Loading menu…</div>;
   if (loadingExisting) return <div className="p-4">Loading order…</div>;
@@ -142,153 +145,59 @@ const OrderScreen: React.FC = () => {
 
       {/* Items grid */}
       <div className="p-4">
-        {loadingDishes ? (
-          <div>Loading items…</div>
-        ) : dishes.length ? (
-          <div className={`grid ${gridCols} gap-3`}>
-            {dishes.map((dish) => (
-              <button
-                key={dish.id}
-                className="h-24 rounded-lg shadow border border-gray-200 bg-white hover:bg-gray-50 active:scale-[0.99] text-left p-3"
-                onClick={() => addItem(dish)}
-              >
-                <div className="font-semibold leading-tight line-clamp-2">{dish.name}</div>
-                <div className="text-sm text-gray-600 mt-1">${dish.price.toFixed(2)}</div>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="text-gray-600">No items in this category.</div>
-        )}
+        <ItemsGrid dishes={dishes} loading={loadingDishes} onAdd={addItem} />
       </div>
 
       {/* Floating Back and Checkout buttons */}
-      <div style={{ position: 'fixed', bottom: BOTTOM_BAR_HEIGHT + 12, left: 12, zIndex: 1100 }}>
-        <button
-          onClick={() => navigate(isEditingExisting ? '/orders' : '/')}
-          style={{
-            padding: '10px 16px',
-            background: '#ef4444',
-            color: '#ffffff',
-            borderRadius: 8,
-            border: '1px solid #ef4444',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          ← Back
-        </button>
-      </div>
-      <div style={{ position: 'fixed', bottom: BOTTOM_BAR_HEIGHT + 12, right: ASIDE_WIDTH + 24 + 12, zIndex: 1100 }}>
-        {isEditingExisting ? (
-          <button
-            onClick={async () => {
-              const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
-              try {
-                await window.db.updateOrderItems({ orderId: Number(orderId), items });
-                navigate('/orders');
-              } catch (e) { console.error(e); }
-            }}
-            style={{
-              padding: '10px 16px',
-              background: '#10b981',
-              color: '#ffffff',
-              borderRadius: 8,
-              border: '1px solid #10b981',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Save Changes
-          </button>
-        ) : (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={async () => {
-                setPaymentMethod('cash');
-                const amount = subtotal;
-                const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
-                try {
-                  if (pending?.customerId && pending?.phoneId) {
-                    await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'cash' });
-                  }
-                } catch (e) { console.error(e); }
-                navigate('/', { state: { orderPlaced: { amount } } });
-              }}
-              style={{ padding: '10px 16px', background: '#111827', color: '#fff', borderRadius: 8, border: '1px solid #111827', fontWeight: 600, cursor: 'pointer' }}
-            >
-              Cash (${subtotal.toFixed(2)})
-            </button>
-            <button
-              onClick={async () => {
-                setPaymentMethod('card');
-                const amount = subtotal;
-                const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
-                try {
-                  if (pending?.customerId && pending?.phoneId) {
-                    await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'card' });
-                  }
-                } catch (e) { console.error(e); }
-                navigate('/', { state: { orderPlaced: { amount } } });
-              }}
-              style={{ padding: '10px 16px', background: '#2563eb', color: '#fff', borderRadius: 8, border: '1px solid #2563eb', fontWeight: 600, cursor: 'pointer' }}
-            >
-              Card (${subtotal.toFixed(2)})
-            </button>
-          </div>
-        )}
-      </div>
+      <CheckoutControls
+        isEditingExisting={isEditingExisting}
+        bottomBarHeight={BOTTOM_BAR_HEIGHT}
+        asideWidth={ASIDE_WIDTH + 24}
+        backTo={isEditingExisting ? '/orders' : '/'}
+        onSaveChanges={async () => {
+          const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+          try {
+            await window.db.updateOrderItems({ orderId: Number(orderId), items });
+            navigate('/orders');
+          } catch (e) { console.error(e); }
+        }}
+        onPayCash={async () => {
+          setPaymentMethod('cash');
+          const amount = subtotal;
+          const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+          try {
+            if (pending?.customerId && pending?.phoneId) {
+              await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'cash' });
+            }
+          } catch (e) { console.error(e); }
+          navigate('/', { state: { orderPlaced: { amount } } });
+        }}
+        onPayCard={async () => {
+          setPaymentMethod('card');
+          const amount = subtotal;
+          const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
+          try {
+            if (pending?.customerId && pending?.phoneId) {
+              await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'card' });
+            }
+          } catch (e) { console.error(e); }
+          navigate('/', { state: { orderPlaced: { amount } } });
+        }}
+        subtotal={subtotal}
+      />
 
       {/* Right order panel */}
-      <aside
-        className="bg-white border-l"
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: BOTTOM_BAR_HEIGHT,
-          width: ASIDE_WIDTH,
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          background: '#ffffff',
-        }}
-      >
-        <div className="px-4 py-3 border-b" style={{ flex: '0 0 auto' }}>
-          <div className="text-lg font-semibold">Items</div>
-          <div className="text-sm text-gray-600">Tap items to add to the order.</div>
-        </div>
-        <div className="p-3" style={{ flex: '1 1 auto', overflowY: 'auto', paddingBottom: 8 }}>
-          {itemsList.length === 0 ? (
-            <div className="text-gray-500">No items yet.</div>
-          ) : (
-            <ul className="space-y-2">
-              {itemsList.map((it) => (
-                <li key={it.id} className="flex items-center justify-between gap-3 border rounded p-2 bg-white shadow-sm">
-                  <div>
-                    <div className="font-medium">{it.name}</div>
-                    <div className="text-sm text-gray-600">${it.price.toFixed(2)} × {it.qty}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => removeOne(it.id)} className="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50" aria-label="Remove one">−</button>
-                    <button onClick={() => addItem({ id: it.id, name: it.name, price: it.price, category_id: selectedCategory ?? 0 })} className="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50" aria-label="Add one">+</button>
-                    <button onClick={() => clearItem(it.id)} className="px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50" aria-label="Remove item">Remove</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className="border-t p-3 bg-white" style={{ flex: '0 0 auto' }}>
-          <div className="flex items-center justify-between text-lg font-semibold" style={{ width: '100%' }}>
-            <span>Total</span>
-            <span>${subtotal.toFixed(2)}</span>
-          </div>
-          {isEditingExisting && (
-            <div className="text-sm text-gray-600 mt-1">Payment: <strong>{paymentMethod ?? '—'}</strong></div>
-          )}
-        </div>
-      </aside>
+      <OrderSummaryPanel
+        items={itemsList}
+        subtotal={subtotal}
+        paymentMethod={isEditingExisting ? paymentMethod : null}
+        selectedCategoryId={selectedCategory}
+        bottomBarHeight={BOTTOM_BAR_HEIGHT}
+        asideWidth={ASIDE_WIDTH + 24}
+        onRemoveOne={removeOne}
+        onAddOne={(dish) => addItem(dish)}
+        onClear={clearItem}
+      />
 
       {/* Bottom category bar */}
       <CategoriesNavBar

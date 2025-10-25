@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import BackButton from '../components/BackButton';
 
 const DailyTotals: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ const DailyTotals: React.FC = () => {
     };
     load();
     const off = window.db.onDataChanged(({ entity }) => {
-  if (entity === 'order') load();
+      if (entity === 'order') load();
     });
     return () => { ignore = true; off(); };
   }, []);
@@ -38,22 +38,7 @@ const DailyTotals: React.FC = () => {
   return (
     <div className="p-4">
       <div style={{ marginBottom: 12 }}>
-        <Link
-          to="/"
-          style={{
-            padding: '8px 12px',
-            background: '#111827',
-            color: '#ffffff',
-            borderRadius: 8,
-            border: '1px solid #111827',
-            cursor: 'pointer',
-            fontWeight: 600,
-            textDecoration: 'none',
-            display: 'inline-block'
-          }}
-        >
-          ← Back
-        </Link>
+        <BackButton to="/">← Back</BackButton>
       </div>
 
       <h1 className="text-2xl font-bold mb-6">Daily totals</h1>

@@ -1,0 +1,11 @@
+/* CustomerForm page-specific styles */
+
+.back-link-wrap {
+  margin-bottom: 12px;
+}
+
+/* Back button styles moved to src/components/BackButton.css */
+
+/* Submit button styles moved to src/components/CreateOrderButton.css */
+
+/* Suggestion row height moved to src/components/SuggestionsTable.css */

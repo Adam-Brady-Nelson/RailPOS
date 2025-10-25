@@ -1,0 +1,14 @@
+/* Styles specific to the Create Order button that aren't covered by Tailwind utilities */
+.create-order-btn {
+  min-width: 420px;
+  height: 72px;
+  font-size: 28px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2563eb; /* ensures consistent color in Electron */
+  color: #ffffff;
+  border: 1px solid #1d4ed8;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+}

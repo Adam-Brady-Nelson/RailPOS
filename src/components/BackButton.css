@@ -1,0 +1,11 @@
+/* Shared BackButton styles */
+.back-link-btn {
+  padding: 8px 12px;
+  background: #111827;
+  color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #111827;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+}

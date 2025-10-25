@@ -58,7 +58,7 @@ A modern Point of Sale (POS) system for restaurants built with React, Vite, Elec
 # Main goals
 - On screen keyboard for touch screen support.
 - Customer form function and look redesign
-- System to update catagories and items within
+- [x] System to update catagories and items within
 - Split db to allow customer lookup and lookup orders from last three order, rest can be truncated when an order is placed.
 
 # Stretch goals

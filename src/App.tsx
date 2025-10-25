@@ -1,12 +1,12 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import MainScreen from './components/MainScreen';
-import CustomerForm from './components/CustomerForm';
-import OrderScreen from './components/OrderScreen';
-import OrderList from './components/OrderList';
-import DailyTotals from './components/DailyTotals';
-import Setup from './components/Setup';
-import MenuManager from './components/MenuManager';
+import MainScreen from './pages/MainScreen';
+import CustomerForm from './pages/CustomerForm';
+import OrderScreen from './pages/OrderScreen';
+import OrderList from './pages/OrderList';
+import DailyTotals from './pages/DailyTotals';
+import Setup from './pages/Setup';
+import MenuManager from './pages/MenuManager';
 
 const App: React.FC = () => {
   return (

@@ -1,4 +1,5 @@
 import React from 'react';
+import './CategoriesNavBar.css';
 
 export type Category = { id: number; name: string };
 
@@ -18,14 +19,11 @@ const CategoriesNavBar: React.FC<Props> = ({ categories, selectedCategoryId, onS
             <button
               key={cat.id}
               onClick={() => onSelect(cat.id)}
+              className="cat-btn"
               style={{
-                padding: '10px 14px',
-                borderRadius: 8,
-                fontWeight: 600,
                 border: '2px solid ' + (selectedCategoryId === cat.id ? '#2563eb' : '#d1d5db'),
                 background: selectedCategoryId === cat.id ? '#2563eb' : '#ffffff',
                 color: selectedCategoryId === cat.id ? '#ffffff' : '#111827',
-                whiteSpace: 'nowrap',
               }}
             >
               {cat.name}

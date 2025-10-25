@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import CategoriesNavBar from '../components/CategoriesNavBar';
 
 type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -28,7 +29,6 @@ const OrderScreen: React.FC = () => {
       const nextQty = curr ? curr.qty + 1 : 1;
       return { ...prev, [dish.id]: { id: dish.id, name: dish.name, price: dish.price, qty: nextQty } };
     });
-    // Add to order tracking if it's a new item
     setItemsOrder((prev) => {
       if (!prev.includes(dish.id)) {
         return [...prev, dish.id];
@@ -43,7 +43,6 @@ const OrderScreen: React.FC = () => {
       const next = { ...prev };
       if (curr.qty <= 1) {
         delete next[id];
-        // Remove from order tracking
         setItemsOrder((prevOrder) => prevOrder.filter(itemId => itemId !== id));
       } else {
         next[id] = { ...curr, qty: curr.qty - 1 };
@@ -107,7 +106,6 @@ const OrderScreen: React.FC = () => {
       try {
         const details = await window.db.getOrderDetails(Number(orderId));
         if (!details || ignore) return;
-        // Populate items
         const next: Record<number, { id:number; name:string; price:number; qty:number }> = {};
         const order: number[] = [];
         for (const it of details.items) {
@@ -136,7 +134,7 @@ const OrderScreen: React.FC = () => {
     <div className="relative min-h-screen" style={{ paddingBottom: BOTTOM_BAR_HEIGHT, paddingRight: ASIDE_WIDTH + 24 }}>
       {/* Header */}
       <div className="px-4 py-3 border-b bg-white sticky top-0 z-10">
-  <h1 className="text-2xl font-bold">{isEditingExisting ? `Edit Order #${orderId}` : 'New Order'}</h1>
+        <h1 className="text-2xl font-bold">{isEditingExisting ? `Edit Order #${orderId}` : 'New Order'}</h1>
         {selectedCategory != null && (
           <p className="text-sm text-gray-600">Viewing: {categories.find(c => c.id === selectedCategory)?.name}</p>
         )}
@@ -293,29 +291,12 @@ const OrderScreen: React.FC = () => {
       </aside>
 
       {/* Bottom category bar */}
-      <div style={{ height: BOTTOM_BAR_HEIGHT }} className="fixed bottom-0 left-0 right-0 bg-white border-t z-20">
-        <div className="h-full overflow-x-auto">
-          <div className="flex items-center gap-2 px-3 py-3 min-w-max">
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  border: '2px solid ' + (selectedCategory === cat.id ? '#2563eb' : '#d1d5db'),
-                  background: selectedCategory === cat.id ? '#2563eb' : '#ffffff',
-                  color: selectedCategory === cat.id ? '#ffffff' : '#111827',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <CategoriesNavBar
+        categories={categories}
+        selectedCategoryId={selectedCategory}
+        onSelect={(id) => setSelectedCategory(id)}
+        height={BOTTOM_BAR_HEIGHT}
+      />
     </div>
   );
 };

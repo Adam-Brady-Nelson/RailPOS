@@ -1,0 +1,12 @@
+/* Standard CSS spacing for ItemsGrid */
+.items-grid {
+  /* Ensure spacing between grid items without relying on utility classes */
+  gap: 12px;               /* modern syntax */
+  grid-gap: 12px;          /* legacy alias for older Chromium builds */
+}
+
+/* Optional: ensure buttons don't collapse spacing visually with borders */
+.items-grid > * {
+  /* If the environment ignores gap, padding here provides a fallback gutter */
+  padding: 4px;
+}

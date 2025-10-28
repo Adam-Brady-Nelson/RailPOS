@@ -15,7 +15,13 @@ import Database from 'better-sqlite3';
 type BetterSqlite3Database = InstanceType<typeof Database>;
 
 const isDev = process.env.VITE_DEV_SERVER === 'true' || !app.isPackaged
-const baseDir = isDev ? process.cwd() : path.dirname(app.getPath('exe'))
+// In production (packaged), write to a user-writable location
+// AppImage/exe directories can be read-only; app.getPath('userData') is correct
+const baseDir = isDev ? process.cwd() : app.getPath('userData')
+// Ensure base directory exists when packaged
+if (!isDev) {
+  try { fs.mkdirSync(baseDir, { recursive: true }); } catch { /* best-effort ensure userData exists */ }
+}
 export const dbPath = path.join(baseDir, 'railpos.sqlite')
 console.log('[DB] Using database at:', dbPath)
 const db = new Database(dbPath, { verbose: console.log });

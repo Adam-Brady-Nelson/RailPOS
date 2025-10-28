@@ -2,6 +2,8 @@
   "name": "railpos",
   "version": "0.1.0",
   "private": true,
+  "description": "A modern POS system built with React, Vite, Electron, and SQLite.",
+  "author": "Adam Brady-Nelson",
   "main": "dist-electron/main.cjs",
   "type": "module",
   "scripts": {
@@ -20,6 +22,7 @@
     "test": "npm run lint && npm run typecheck"
   },
   "build": {
+    "productName": "RailPOS",
     "appId": "com.example.reactviteelectron",
     "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
     "files": [
@@ -57,7 +60,6 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.4.1",
-    "electron": "^30.5.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.3"
@@ -75,6 +77,7 @@
     "autoprefixer": "^10.4.21",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
+    "electron": "^30.5.1",
     "electron-builder": "^24.13.3",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",

@@ -56,6 +56,7 @@ export function startNewShift(): ShiftInfo {
       customer_id INTEGER,
       phone_id INTEGER,
       status TEXT NOT NULL DEFAULT 'pending',
+      fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection')) DEFAULT 'collection',
       payment_method TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -85,8 +86,12 @@ export function getOrdersDb(): BetterSqlite3Database {
   try {
     const cols = ordersDb.prepare("PRAGMA table_info('orders')").all() as Array<{ name: string }>
     const hasPaymentMethod = cols.some(c => c.name === 'payment_method');
+    const hasFulfillment = cols.some(c => c.name === 'fulfillment');
     if (!hasPaymentMethod) {
       ordersDb.exec("ALTER TABLE orders ADD COLUMN payment_method TEXT");
+    }
+    if (!hasFulfillment) {
+      ordersDb.exec("ALTER TABLE orders ADD COLUMN fulfillment TEXT NOT NULL DEFAULT 'collection'");
     }
   } catch (e) {
     console.warn('[DB] Orders schema migration check failed:', e);

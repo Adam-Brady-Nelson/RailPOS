@@ -139,9 +139,9 @@ ipcMain.handle('get-orders-today', async () => {
 ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   const odb = getOrdersDb();
   const order = odb.prepare(`
-    SELECT id, customer_id, phone_id, status, payment_method, created_at
+    SELECT id, customer_id, phone_id, status, payment_method, fulfillment, created_at
     FROM orders WHERE id = ?
-  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; payment_method: string | null; created_at:string } | undefined;
+  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; payment_method: string | null; fulfillment: 'delivery' | 'collection' | null; created_at:string } | undefined;
   if (!order) return null;
 
   const items = odb.prepare(`
@@ -169,7 +169,7 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   }
 
   return {
-    order: { id: order.id, status: order.status, phone_id: order.phone_id, payment_method: order.payment_method, created_at: order.created_at },
+    order: { id: order.id, status: order.status, phone_id: order.phone_id, payment_method: order.payment_method, fulfillment: (order.fulfillment ?? 'collection') as 'delivery' | 'collection', created_at: order.created_at },
     customer,
     items: items.map(it => ({ dish_id: it.dish_id, name: names.get(it.dish_id) ?? `Dish #${it.dish_id}` , quantity: it.quantity, price: it.price })),
     subtotal,
@@ -265,11 +265,11 @@ ipcMain.handle('create-or-update-customer', async (_e, customer: { name: string;
 });
 
 // New: create order with items at checkout
-ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => {
+ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; fulfillment?: 'delivery' | 'collection'; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => {
   try {
     const odb = getOrdersDb();
-    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, payment_method, status) VALUES (?, ?, ?, ?)')
-      .run(payload.customerId, payload.phoneId, payload.payment_method ?? null, payload.payment_method ? 'paid' : 'pending');
+    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, fulfillment, payment_method, status) VALUES (?, ?, ?, ?, ?)')
+      .run(payload.customerId, payload.phoneId, payload.fulfillment ?? 'collection', payload.payment_method ?? null, payload.payment_method ? 'paid' : 'pending');
     const orderId = orderInfo.lastInsertRowid as number;
     if (payload.items && payload.items.length > 0) {
       const stmt = odb.prepare('INSERT INTO order_items (order_id, dish_id, quantity, price) VALUES (?, ?, ?, ?)');

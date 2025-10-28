@@ -18,7 +18,7 @@ const ASIDE_WIDTH = 380; // px right panel
 const OrderScreen: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const location = useLocation() as unknown as { state?: { customerId?: number; phoneId?: number; customer?: { name:string; phone:string; address:string } } };
+  const location = useLocation() as unknown as { state?: { customerId?: number; phoneId?: number; fulfillment?: 'delivery' | 'collection'; customer?: { name:string; phone:string; address:string } } };
   const pending = location?.state;
   const confirm = useConfirm();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -192,7 +192,7 @@ const OrderScreen: React.FC = () => {
           const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
           try {
             if (pending?.customerId && pending?.phoneId) {
-              await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'cash' });
+              await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, fulfillment: pending.fulfillment ?? 'collection', items, payment_method: 'cash' });
             }
           } catch (e) { console.error(e); }
           navigate('/', { state: { orderPlaced: { amount } } });
@@ -209,7 +209,7 @@ const OrderScreen: React.FC = () => {
           const items = itemsList.map(it => ({ dish_id: it.id, quantity: it.qty, price: it.price }));
           try {
             if (pending?.customerId && pending?.phoneId) {
-              await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, items, payment_method: 'card' });
+              await window.db.createOrderWithItems({ customerId: pending.customerId, phoneId: pending.phoneId, fulfillment: pending.fulfillment ?? 'collection', items, payment_method: 'card' });
             }
           } catch (e) { console.error(e); }
           navigate('/', { state: { orderPlaced: { amount } } });

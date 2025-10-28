@@ -15,7 +15,6 @@ A modern Point of Sale (POS) system for restaurants built with React, Vite, Elec
 - Vite for fast development and hot module replacement
 - Electron for desktop application framework
 - SQLite (via better-sqlite3) for data persistence
-- TailwindCSS for styling
 - React Router for navigation
 
 ## Getting Started

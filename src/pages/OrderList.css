@@ -1,0 +1,20 @@
+/* OrderList page-specific styles */
+
+.order-list__container {
+  padding: 24px;
+  padding-right: 444px; /* ASIDE_WIDTH + 24 */
+}
+
+.order-list__back {
+  margin-bottom: 12px;
+}
+
+.order-list__title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.order-list__error {
+  color: #dc2626;
+}

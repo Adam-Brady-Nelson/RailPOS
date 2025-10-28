@@ -1,12 +1,69 @@
 /* Standard CSS spacing for ItemsGrid */
 .items-grid {
-  /* Ensure spacing between grid items without relying on utility classes */
-  gap: 12px;               /* modern syntax */
-  grid-gap: 12px;          /* legacy alias for older Chromium builds */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 8px;
+}
+@media (min-width: 640px) {
+  .items-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (min-width: 768px) {
+  .items-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .items-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+@media (min-width: 1280px) {
+  .items-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
 }
 
-/* Optional: ensure buttons don't collapse spacing visually with borders */
-.items-grid > * {
-  /* If the environment ignores gap, padding here provides a fallback gutter */
-  padding: 4px;
+.items-grid__empty {
+  color: #6b7280;
+  font-size: 1.1rem;
+  padding: 1rem;
+}
+
+.items-grid__item {
+  height: 64px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  text-align: left;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+.items-grid__item:hover {
+  background: #f3f4f6;
+}
+.items-grid__item:active {
+  transform: scale(0.98);
+}
+
+.items-grid__name {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.items-grid__price {
+  font-size: 1rem;
+  color: #2563eb;
+  font-weight: 500;
 }

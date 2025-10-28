@@ -1,11 +1,28 @@
 /* CustomerForm page-specific styles */
 
+.customer-form__container {
+  padding: 24px;
+}
+
 .back-link-wrap {
   margin-bottom: 12px;
 }
 
-/* Back button styles moved to src/components/BackButton.css */
+.customer-form__title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
 
-/* Submit button styles moved to src/components/CreateOrderButton.css */
+.customer-form__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-/* Suggestion row height moved to src/components/SuggestionsTable.css */
+.customer-form__submit-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}

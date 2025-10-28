@@ -1,5 +1,6 @@
 import React from 'react';
 import BackButton from './BackButton';
+import './CheckoutControls.css';
 
 interface Props {
   isEditingExisting: boolean;
@@ -27,38 +28,37 @@ const CheckoutControls: React.FC<Props> = ({
   return (
     <>
       {/* Back button (standard component) */}
-      <div style={{ position: 'fixed', bottom: bottomBarHeight + 12, left: 12, zIndex: 1100 }} onClickCapture={onBackClick}>
+      <div
+        className="checkout-controls__back"
+        style={{ position: 'fixed', bottom: bottomBarHeight + 12, left: 12, zIndex: 1100 }}
+        onClickCapture={onBackClick}
+      >
         <BackButton to={backTo}>← Back</BackButton>
       </div>
 
       {/* Checkout / Save controls */}
-      <div style={{ position: 'fixed', bottom: bottomBarHeight + 12, right: asideWidth + 24 + 12, zIndex: 1100 }}>
+      <div
+        className="checkout-controls__actions"
+        style={{ position: 'fixed', bottom: bottomBarHeight + 12, right: asideWidth + 24 + 12, zIndex: 1100 }}
+      >
         {isEditingExisting ? (
           <button
             onClick={() => onSaveChanges && onSaveChanges()}
-            style={{
-              padding: '10px 16px',
-              background: '#10b981',
-              color: '#ffffff',
-              borderRadius: 8,
-              border: '1px solid #10b981',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="checkout-controls__save-btn"
           >
             Save Changes
           </button>
         ) : (
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="checkout-controls__pay-group">
             <button
               onClick={() => onPayCash && onPayCash()}
-              style={{ padding: '10px 16px', background: '#111827', color: '#fff', borderRadius: 8, border: '1px solid #111827', fontWeight: 600, cursor: 'pointer' }}
+              className="checkout-controls__pay-btn checkout-controls__pay-btn--cash"
             >
               Cash (${subtotal.toFixed(2)})
             </button>
             <button
               onClick={() => onPayCard && onPayCard()}
-              style={{ padding: '10px 16px', background: '#2563eb', color: '#fff', borderRadius: 8, border: '1px solid #2563eb', fontWeight: 600, cursor: 'pointer' }}
+              className="checkout-controls__pay-btn checkout-controls__pay-btn--card"
             >
               Card (${subtotal.toFixed(2)})
             </button>

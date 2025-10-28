@@ -1,4 +1,5 @@
 import React from 'react';
+import './ItemsPanel.css';
 
 export type Dish = { id: number; name: string; price: number; category_id: number };
 
@@ -14,28 +15,28 @@ interface Props {
 
 const ItemsPanel: React.FC<Props> = ({ selectedCategoryId, selectedCatName, loading, dishes, onAdd, onEdit, onDelete }) => {
   return (
-    <section className="md:col-span-2">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold">Items in “{selectedCatName}”</h2>
-        <button onClick={onAdd} className="px-3 py-1 rounded bg-green-600 text-white border border-green-600 hover:bg-green-700">+ Add Item</button>
+  <section className="items-panel">
+      <div className="items-panel__header">
+        <h2 className="items-panel__title">Items in “{selectedCatName}”</h2>
+        <button onClick={onAdd} className="items-panel__add-btn">+ Add Item</button>
       </div>
       {selectedCategoryId == null ? (
-        <div className="text-gray-600">Select a category to manage items.</div>
+        <div className="items-panel__empty">Select a category to manage items.</div>
       ) : loading ? (
         <div>Loading…</div>
       ) : dishes.length === 0 ? (
-        <div className="text-gray-600">No items in this category.</div>
+        <div className="items-panel__empty">No items in this category.</div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="items-panel__list">
           {dishes.map(dish => (
-            <li key={dish.id} className="flex items-center justify-between border rounded p-2 bg-white">
+            <li key={dish.id} className="items-panel__item">
               <div>
-                <div className="font-medium">{dish.name}</div>
-                <div className="text-sm text-gray-600">${dish.price.toFixed(2)}</div>
+                <div className="items-panel__item-name">{dish.name}</div>
+                <div className="items-panel__item-price">${dish.price.toFixed(2)}</div>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => onEdit(dish)} className="px-2 py-1 text-sm rounded border">Edit</button>
-                <button onClick={() => onDelete(dish)} className="px-2 py-1 text-sm rounded border border-red-300 text-red-700">Delete</button>
+              <div className="items-panel__item-actions">
+                <button onClick={() => onEdit(dish)} className="items-panel__edit-btn">Edit</button>
+                <button onClick={() => onDelete(dish)} className="items-panel__delete-btn">Delete</button>
               </div>
             </li>
           ))}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import BackButton from '../components/BackButton';
+import './DailyTotals.css';
 
 const DailyTotals: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -36,35 +37,35 @@ const DailyTotals: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-4">
+    <div className="daily-totals__container">
       <div style={{ marginBottom: 12 }}>
         <BackButton to="/">← Back</BackButton>
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">Daily totals</h1>
+      <h1 className="daily-totals__title">Daily totals</h1>
       {loading ? (
         <div>Loading…</div>
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="daily-totals__error">{error}</div>
       ) : !data ? (
         <div>No data.</div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <div className="bg-white border rounded p-4 shadow-sm">
-            <div className="text-sm text-gray-600">Orders today</div>
-            <div className="text-3xl font-bold">{data.orders}</div>
+        <div className="daily-totals__grid">
+          <div className="daily-totals__card">
+            <div className="daily-totals__label">Orders today</div>
+            <div className="daily-totals__value">{data.orders}</div>
           </div>
-          <div className="bg-white border rounded p-4 shadow-sm">
-            <div className="text-sm text-gray-600">Total revenue</div>
-            <div className="text-3xl font-bold">${data.total.toFixed(2)}</div>
+          <div className="daily-totals__card">
+            <div className="daily-totals__label">Total revenue</div>
+            <div className="daily-totals__value">${data.total.toFixed(2)}</div>
           </div>
-          <div className="bg-white border rounded p-4 shadow-sm">
-            <div className="text-sm text-gray-600">Cash</div>
-            <div className="text-3xl font-bold">${(breakdown?.cash ?? 0).toFixed(2)}</div>
+          <div className="daily-totals__card">
+            <div className="daily-totals__label">Cash</div>
+            <div className="daily-totals__value">${(breakdown?.cash ?? 0).toFixed(2)}</div>
           </div>
-          <div className="bg-white border rounded p-4 shadow-sm">
-            <div className="text-sm text-gray-600">Card</div>
-            <div className="text-3xl font-bold">${(breakdown?.card ?? 0).toFixed(2)}</div>
+          <div className="daily-totals__card">
+            <div className="daily-totals__label">Card</div>
+            <div className="daily-totals__value">${(breakdown?.card ?? 0).toFixed(2)}</div>
           </div>
         </div>
       )}

@@ -1,0 +1,77 @@
+/* Container and layout */
+.menu-manager-container {
+  padding: 1.5rem;
+}
+.menu-manager-back {
+  margin-bottom: 12px;
+}
+.menu-manager-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.menu-manager-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .menu-manager-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Modal styles */
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.modal-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: #374151;
+}
+.modal-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+.modal-error {
+  color: #dc2626;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.modal-btn-cancel {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+}
+.modal-btn-save {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+}
+.modal-btn-save[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.modal-field {
+  margin-bottom: 1rem;
+}

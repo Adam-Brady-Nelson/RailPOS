@@ -69,12 +69,12 @@ const CustomerForm: React.FC = () => {
   };
 
   return (
-    <div className="p-4" ref={containerRef}>
+    <div className="customer-form__container" ref={containerRef}>
       <div className="back-link-wrap">
         <BackButton to="/">← Back</BackButton>
       </div>
-      <h1 className="text-2xl font-bold mb-4">Customer Information (Phone {phoneId})</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <h1 className="customer-form__title">Customer Information (Phone {phoneId})</h1>
+      <form onSubmit={handleSubmit} className="customer-form__form">
         <CustomerInputs
           name={name}
           phone={phone}
@@ -83,7 +83,7 @@ const CustomerForm: React.FC = () => {
           onPhoneChange={setPhone}
           onAddressChange={setAddress}
         />
-        <div className="flex justify-center mt-6 mb-2">
+        <div className="customer-form__submit-wrap">
           <CreateOrderButton />
         </div>
       </form>

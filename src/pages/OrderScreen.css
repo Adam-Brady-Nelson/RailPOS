@@ -1,0 +1,31 @@
+/* OrderScreen page-specific styles */
+
+.order-screen__container {
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 96px;
+  padding-right: 404px;
+}
+
+.order-screen__header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.order-screen__title {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.order-screen__subtitle {
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.order-screen__items {
+  padding: 16px;
+}

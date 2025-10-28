@@ -20,34 +20,34 @@ const CustomerInputs: React.FC<CustomerInputsProps> = ({
 }) => {
   return (
     <>
-      <div>
-        <label htmlFor="name" className="block">Customer Name</label>
+      <div className="customer-inputs__field">
+        <label htmlFor="name" className="customer-inputs__label">Customer Name</label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          className="w-full border rounded px-3 py-3 text-lg input-56"
+          className="customer-inputs__input"
         />
       </div>
-      <div className="relative">
-        <label htmlFor="phone" className="block">Phone Number</label>
+      <div className="customer-inputs__field">
+        <label htmlFor="phone" className="customer-inputs__label">Phone Number</label>
         <input
           id="phone"
           type="tel"
           value={phone}
           onChange={(e) => onPhoneChange(e.target.value)}
-          className="w-full border rounded px-3 py-3 text-lg input-56"
+          className="customer-inputs__input"
           required
         />
       </div>
-      <div>
-        <label htmlFor="address" className="block">Address</label>
+      <div className="customer-inputs__field">
+        <label htmlFor="address" className="customer-inputs__label">Address</label>
         <textarea
           id="address"
           value={address}
           onChange={(e) => onAddressChange(e.target.value)}
-          className="w-full border rounded px-3 py-3 text-lg textarea-min-56"
+          className="customer-inputs__textarea"
         />
       </div>
     </>

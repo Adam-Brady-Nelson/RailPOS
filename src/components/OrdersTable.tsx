@@ -1,4 +1,5 @@
 import React from 'react';
+import './OrdersTable.css';
 
 export interface OrderRow {
   id: number;
@@ -18,33 +19,33 @@ interface OrdersTableProps {
 
 const OrdersTable: React.FC<OrdersTableProps> = ({ orders, selectedId, onSelect }) => {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+    <div className="orders-table__container">
+      <table className="orders-table">
         <thead>
           <tr>
-            <th className="border p-2 text-left">#</th>
-            <th className="border p-2 text-left">Time</th>
-            <th className="border p-2 text-left">Customer</th>
-            <th className="border p-2 text-left">Phone</th>
-            <th className="border p-2 text-left">Phone ID</th>
-            <th className="border p-2 text-left">Status</th>
-            <th className="border p-2 text-right">Total</th>
+            <th className="orders-table__th orders-table__th--left">#</th>
+            <th className="orders-table__th orders-table__th--left">Time</th>
+            <th className="orders-table__th orders-table__th--left">Customer</th>
+            <th className="orders-table__th orders-table__th--left">Phone</th>
+            <th className="orders-table__th orders-table__th--left">Phone ID</th>
+            <th className="orders-table__th orders-table__th--left">Status</th>
+            <th className="orders-table__th orders-table__th--right">Total</th>
           </tr>
         </thead>
         <tbody>
           {orders.map((o) => (
             <tr
               key={o.id}
-              className={"cursor-pointer hover:bg-gray-50 " + (selectedId === o.id ? 'bg-blue-50' : '')}
+              className={"orders-table__row" + (selectedId === o.id ? ' orders-table__row--selected' : '')}
               onClick={() => onSelect(o.id)}
             >
-              <td className="border p-2">{o.id}</td>
-              <td className="border p-2">{new Date(o.created_at).toLocaleTimeString()}</td>
-              <td className="border p-2">{o.customer_name ?? '—'}</td>
-              <td className="border p-2">{o.customer_phone ?? '—'}</td>
-              <td className="border p-2">{o.phone_id}</td>
-              <td className="border p-2">{o.status}</td>
-              <td className="border p-2 text-right">${o.total.toFixed(2)}</td>
+              <td className="orders-table__td">{o.id}</td>
+              <td className="orders-table__td">{new Date(o.created_at).toLocaleTimeString()}</td>
+              <td className="orders-table__td">{o.customer_name ?? '—'}</td>
+              <td className="orders-table__td">{o.customer_phone ?? '—'}</td>
+              <td className="orders-table__td">{o.phone_id}</td>
+              <td className="orders-table__td">{o.status}</td>
+              <td className="orders-table__td orders-table__td--right">${o.total.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>

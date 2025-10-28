@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import './ConfirmProvider.css';
 
 type ConfirmOptions = {
   message: string;
@@ -65,56 +66,28 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
       role="dialog"
       aria-modal="true"
       onClick={() => onClose(0)}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 2147483646, // very high to ensure on top
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'auto',
-      }}
+      className="confirm-modal"
     >
       {/* Backdrop */}
-      <div
-        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }}
-      />
+      <div className="confirm-modal__backdrop" />
       {/* Modal */}
       <div
+        className="confirm-modal__dialog"
         onClick={(e) => { e.stopPropagation(); }}
         onKeyDown={(e) => {
           if (e.key === 'Escape') { e.stopPropagation(); onClose(0); }
           if (e.key === 'Enter') { e.stopPropagation(); onClose((dialog.buttons?.length ?? 2) - 1); }
         }}
         tabIndex={-1}
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          width: '90%',
-          maxWidth: 480,
-          borderRadius: 12,
-          background: '#ffffff',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-          border: '1px solid #e5e7eb',
-          padding: 20,
-        }}
       >
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: '#111827', marginBottom: 4 }}>{dialog.message}</h2>
-        {dialog.detail && <p style={{ fontSize: 14, color: '#4b5563', marginBottom: 16 }}>{dialog.detail}</p>}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <h2 className="confirm-modal__title">{dialog.message}</h2>
+        {dialog.detail && <p className="confirm-modal__detail">{dialog.detail}</p>}
+        <div className="confirm-modal__actions">
           {(dialog.buttons ?? ['Cancel', 'OK']).map((label, idx) => (
             <button
               key={idx}
               onClick={() => onClose(idx)}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 8,
-                fontWeight: 600,
-                border: '1px solid ' + (idx === (dialog.buttons?.length ?? 2) - 1 ? '#2563eb' : '#374151'),
-                background: idx === (dialog.buttons?.length ?? 2) - 1 ? '#2563eb' : '#374151',
-                color: '#ffffff',
-                cursor: 'pointer',
-              }}
+              className={`confirm-modal__btn${idx === (dialog.buttons?.length ?? 2) - 1 ? ' confirm-modal__btn--primary' : ''}`}
             >
               {label}
             </button>

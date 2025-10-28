@@ -19,10 +19,6 @@ const CreateOrderButton: React.FC<Props> = ({
 }) => {
   const classes = [
     'create-order-btn',
-    // Tailwind utilities for interactivity and base look
-    'px-8 py-4 text-2xl font-semibold bg-blue-600 text-white rounded-xl',
-    'hover:bg-blue-700 shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300',
-    'transition-transform active:scale-[0.98]',
     className ?? '',
   ]
     .filter(Boolean)

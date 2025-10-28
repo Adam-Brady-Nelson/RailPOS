@@ -5,6 +5,7 @@ import ItemsGrid from '../components/ItemsGrid';
 import CheckoutControls from '../components/CheckoutControls';
 import OrderSummaryPanel from '../components/OrderSummaryPanel';
 import { useConfirm } from '../components/ConfirmProvider';
+import './OrderScreen.css';
 
 type Category = { id: number; name: string };
 type Dish = { id: number; name: string; price: number; category_id: number };
@@ -146,22 +147,22 @@ const OrderScreen: React.FC = () => {
 
   // grid columns are handled inside ItemsGrid
 
-  if (loadingCats && categories.length === 0) return <div className="p-4">Loading menu…</div>;
-  if (loadingExisting) return <div className="p-4">Loading order…</div>;
-  if (!categories.length) return <div className="p-4">No categories found. Add categories in the database.</div>;
+  if (loadingCats && categories.length === 0) return <div className="order-screen__items">Loading menu…</div>;
+  if (loadingExisting) return <div className="order-screen__items">Loading order…</div>;
+  if (!categories.length) return <div className="order-screen__items">No categories found. Add categories in the database.</div>;
 
   return (
-    <div className="relative min-h-screen" style={{ paddingBottom: BOTTOM_BAR_HEIGHT, paddingRight: ASIDE_WIDTH + 24 }}>
+    <div className="order-screen__container">
       {/* Header */}
-      <div className="px-4 py-3 border-b bg-white sticky top-0 z-10">
-        <h1 className="text-2xl font-bold">{isEditingExisting ? `Edit Order #${orderId}` : 'New Order'}</h1>
+      <div className="order-screen__header">
+        <h1 className="order-screen__title">{isEditingExisting ? `Edit Order #${orderId}` : 'New Order'}</h1>
         {selectedCategory != null && (
-          <p className="text-sm text-gray-600">Viewing: {categories.find(c => c.id === selectedCategory)?.name}</p>
+          <p className="order-screen__subtitle">Viewing: {categories.find(c => c.id === selectedCategory)?.name}</p>
         )}
       </div>
 
       {/* Items grid */}
-      <div className="p-4">
+      <div className="order-screen__items">
         <ItemsGrid dishes={dishes} loading={loadingDishes} onAdd={addItem} />
       </div>
 

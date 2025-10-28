@@ -1,0 +1,55 @@
+/* Back button container */
+.checkout-controls__back {
+  /* Positioning is handled inline for dynamic values */
+}
+
+/* Actions container */
+.checkout-controls__actions {
+  /* Positioning is handled inline for dynamic values */
+}
+
+/* Save button */
+.checkout-controls__save-btn {
+  padding: 10px 16px;
+  background: #10b981;
+  color: #fff;
+  border-radius: 8px;
+  border: 1px solid #10b981;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.checkout-controls__save-btn:hover {
+  background: #059669;
+}
+
+/* Payment button group */
+.checkout-controls__pay-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Payment buttons */
+.checkout-controls__pay-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid #111827;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.checkout-controls__pay-btn--cash {
+  background: #111827;
+  border-color: #111827;
+}
+.checkout-controls__pay-btn--cash:hover {
+  background: #374151;
+}
+.checkout-controls__pay-btn--card {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+.checkout-controls__pay-btn--card:hover {
+  background: #1746a2;
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import './OrderSummaryPanel.css';
 
 export type OrderItem = { id: number; name: string; price: number; qty: number };
 export type DishLike = { id: number; name: string; price: number; category_id: number };
@@ -28,7 +29,7 @@ const OrderSummaryPanel: React.FC<Props> = ({
 }) => {
   return (
     <aside
-      className="bg-white border-l"
+      className="order-summary-panel"
       style={{
         position: 'fixed',
         top: 0,
@@ -41,38 +42,38 @@ const OrderSummaryPanel: React.FC<Props> = ({
         background: '#ffffff',
       }}
     >
-      <div className="px-4 py-3 border-b" style={{ flex: '0 0 auto' }}>
-        <div className="text-lg font-semibold">Items</div>
-        <div className="text-sm text-gray-600">Tap items to add to the order.</div>
+      <div className="order-summary-panel__header" style={{ flex: '0 0 auto' }}>
+        <div className="order-summary-panel__title">Items</div>
+        <div className="order-summary-panel__subtitle">Tap items to add to the order.</div>
       </div>
-      <div className="p-3" style={{ flex: '1 1 auto', overflowY: 'auto', paddingBottom: 8 }}>
+      <div className="order-summary-panel__body" style={{ flex: '1 1 auto', overflowY: 'auto', paddingBottom: 8 }}>
         {items.length === 0 ? (
-          <div className="text-gray-500">No items yet.</div>
+          <div className="order-summary-panel__empty">No items yet.</div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="order-summary-panel__list">
             {items.map((it) => (
-              <li key={it.id} className="flex items-center justify-between gap-3 border rounded p-2 bg-white shadow-sm">
+              <li key={it.id} className="order-summary-panel__item">
                 <div>
-                  <div className="font-medium">{it.name}</div>
-                  <div className="text-sm text-gray-600">${it.price.toFixed(2)} × {it.qty}</div>
+                  <div className="order-summary-panel__item-name">{it.name}</div>
+                  <div className="order-summary-panel__item-price">${it.price.toFixed(2)} × {it.qty}</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => onRemoveOne(it.id)} className="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50" aria-label="Remove one">−</button>
-                  <button onClick={() => onAddOne({ id: it.id, name: it.name, price: it.price, category_id: selectedCategoryId ?? 0 })} className="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50" aria-label="Add one">+</button>
-                  <button onClick={() => onClear(it.id)} className="px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50" aria-label="Remove item">Remove</button>
+                <div className="order-summary-panel__item-actions">
+                  <button onClick={() => onRemoveOne(it.id)} className="order-summary-panel__btn order-summary-panel__btn--qty" aria-label="Remove one">−</button>
+                  <button onClick={() => onAddOne({ id: it.id, name: it.name, price: it.price, category_id: selectedCategoryId ?? 0 })} className="order-summary-panel__btn order-summary-panel__btn--qty" aria-label="Add one">+</button>
+                  <button onClick={() => onClear(it.id)} className="order-summary-panel__btn order-summary-panel__btn--remove" aria-label="Remove item">Remove</button>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </div>
-      <div className="border-t p-3 bg-white" style={{ flex: '0 0 auto' }}>
-        <div className="flex items-center justify-between text-lg font-semibold" style={{ width: '100%' }}>
+      <div className="order-summary-panel__footer" style={{ flex: '0 0 auto' }}>
+        <div className="order-summary-panel__total-row">
           <span>Total</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
         {paymentMethod && (
-          <div className="text-sm text-gray-600 mt-1">Payment: <strong>{paymentMethod}</strong></div>
+          <div className="order-summary-panel__payment">Payment: <strong>{paymentMethod}</strong></div>
         )}
       </div>
     </aside>

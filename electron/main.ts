@@ -107,6 +107,7 @@ ipcMain.handle('get-orders-today', async () => {
       o.created_at,
       o.status,
       o.phone_id,
+      o.fulfillment,
       o.customer_id,
       COALESCE(SUM(oi.quantity * oi.price), 0) AS total
     FROM orders o
@@ -114,7 +115,7 @@ ipcMain.handle('get-orders-today', async () => {
     WHERE date(o.created_at, 'localtime') = date('now', 'localtime')
     GROUP BY o.id
     ORDER BY o.created_at DESC
-  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; customer_id:number|null; total:number }>
+  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | null; customer_id:number|null; total:number }>
 
   const ids = Array.from(new Set(orders.map(o => o.customer_id).filter((v): v is number => typeof v === 'number')))
   const customersById = new Map<number, { id:number; name:string; phone:string }>()
@@ -129,6 +130,7 @@ ipcMain.handle('get-orders-today', async () => {
     created_at: o.created_at,
     status: o.status,
     phone_id: o.phone_id,
+    fulfillment: (o.fulfillment ?? 'collection') as 'delivery' | 'collection',
     customer_name: o.customer_id != null ? customersById.get(o.customer_id)?.name : undefined,
     customer_phone: o.customer_id != null ? customersById.get(o.customer_id)?.phone : undefined,
     total: o.total,
@@ -153,9 +155,9 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
 
   const subtotal = items.reduce((s, it) => s + it.price * it.quantity, 0);
 
-  let customer: { id:number; name:string; phone:string } | null = null;
+  let customer: { id:number; name:string; phone:string; address:string } | null = null;
   if (order.customer_id != null) {
-    const row = db.prepare('SELECT id, name, phone FROM customers WHERE id = ?').get(order.customer_id) as { id:number; name:string; phone:string } | undefined
+    const row = db.prepare('SELECT id, name, phone, address FROM customers WHERE id = ?').get(order.customer_id) as { id:number; name:string; phone:string; address:string } | undefined
     if (row) customer = row;
   }
 

@@ -6,6 +6,7 @@ export interface OrderRow {
   created_at: string;
   status: string;
   phone_id: number;
+  fulfillment: 'delivery' | 'collection';
   customer_name?: string;
   customer_phone?: string;
   total: number;
@@ -27,7 +28,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, selectedId, onSelect 
             <th className="orders-table__th orders-table__th--left">Time</th>
             <th className="orders-table__th orders-table__th--left">Customer</th>
             <th className="orders-table__th orders-table__th--left">Phone</th>
-            <th className="orders-table__th orders-table__th--left">Phone ID</th>
+            <th className="orders-table__th orders-table__th--left">Fulfillment</th>
             <th className="orders-table__th orders-table__th--left">Status</th>
             <th className="orders-table__th orders-table__th--right">Total</th>
           </tr>
@@ -43,7 +44,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, selectedId, onSelect 
               <td className="orders-table__td">{new Date(o.created_at).toLocaleTimeString()}</td>
               <td className="orders-table__td">{o.customer_name ?? '—'}</td>
               <td className="orders-table__td">{o.customer_phone ?? '—'}</td>
-              <td className="orders-table__td">{o.phone_id}</td>
+              <td className="orders-table__td">{o.fulfillment === 'delivery' ? 'Delivery' : 'Collection'}</td>
               <td className="orders-table__td">{o.status}</td>
               <td className="orders-table__td orders-table__td--right">${o.total.toFixed(2)}</td>
             </tr>

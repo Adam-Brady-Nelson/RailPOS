@@ -18,14 +18,13 @@ const CustomerForm: React.FC = () => {
   const navigate = useNavigate();
   const { phoneId } = useParams<{ phoneId: string }>();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreate = async (fulfillment: 'delivery' | 'collection') => {
     try {
       const { customerId } = await window.db.createOrUpdateCustomer({ name, phone, address });
-      // Navigate to order screen without creating an order yet; attach details in state
-      navigate(`/order/new`, { state: { customerId, phoneId: parseInt(phoneId!, 10), customer: { name, phone, address } } });
+      // Navigate to order screen without creating an order yet; attach details in state including fulfillment
+      navigate(`/order/new`, { state: { customerId, phoneId: parseInt(phoneId!, 10), fulfillment, customer: { name, phone, address } } });
     } catch (error) {
-      console.error('Failed to create customer and order:', error);
+      console.error('Failed to create customer:', error);
       // Optionally, show an error message to the user
     }
   };
@@ -74,7 +73,7 @@ const CustomerForm: React.FC = () => {
         <BackButton to="/">← Back</BackButton>
       </div>
       <h1 className="customer-form__title">Customer Information (Phone {phoneId})</h1>
-      <form onSubmit={handleSubmit} className="customer-form__form">
+      <form onSubmit={(e) => e.preventDefault()} className="customer-form__form">
         <CustomerInputs
           name={name}
           phone={phone}
@@ -84,7 +83,8 @@ const CustomerForm: React.FC = () => {
           onAddressChange={setAddress}
         />
         <div className="customer-form__submit-wrap">
-          <CreateOrderButton />
+          <CreateOrderButton type="button" onClick={() => handleCreate('delivery')}>Delivery</CreateOrderButton>
+          <CreateOrderButton type="button" onClick={() => handleCreate('collection')}>Collection</CreateOrderButton>
         </div>
       </form>
       {/* Suggestions Table */}

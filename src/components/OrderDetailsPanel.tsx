@@ -2,10 +2,10 @@ import React from 'react';
 import './OrderDetailsPanel.css';
 
 type OrderItem = { dish_id:number; name:string; quantity:number; price:number };
-type Customer = { id:number; name:string; phone:string };
+type Customer = { id:number; name:string; phone:string; address:string };
 
 export interface OrderDetailsData {
-  order: { id:number; status:string; phone_id:number; created_at:string };
+  order: { id:number; status:string; phone_id:number; fulfillment: 'delivery' | 'collection'; created_at:string };
   customer: Customer | null;
   items: OrderItem[];
   subtotal: number;
@@ -47,8 +47,15 @@ const OrderDetailsPanel: React.FC<Props> = ({ selectedId, details, loading, widt
                 <div className="order-details-panel__customer-title">Customer</div>
                 <div className="order-details-panel__customer-name">{details.customer.name}</div>
                 <div className="order-details-panel__customer-phone">{details.customer.phone}</div>
+                {details.customer.address && (
+                  <div className="order-details-panel__customer-address">{details.customer.address}</div>
+                )}
               </div>
             )}
+            <div className="order-details-panel__meta">
+              <div><strong>Fulfillment:</strong> {details.order.fulfillment === 'delivery' ? 'Delivery' : 'Collection'}</div>
+              <div><strong>Placed:</strong> {new Date(details.order.created_at).toLocaleString()}</div>
+            </div>
             <div>
               <div className="order-details-panel__items-title">Items</div>
               {details.items.length === 0 ? (

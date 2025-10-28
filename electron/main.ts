@@ -107,6 +107,7 @@ ipcMain.handle('get-orders-today', async () => {
       o.created_at,
       o.status,
       o.phone_id,
+      o.fulfillment,
       o.customer_id,
       COALESCE(SUM(oi.quantity * oi.price), 0) AS total
     FROM orders o
@@ -114,7 +115,7 @@ ipcMain.handle('get-orders-today', async () => {
     WHERE date(o.created_at, 'localtime') = date('now', 'localtime')
     GROUP BY o.id
     ORDER BY o.created_at DESC
-  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; customer_id:number|null; total:number }>
+  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | null; customer_id:number|null; total:number }>
 
   const ids = Array.from(new Set(orders.map(o => o.customer_id).filter((v): v is number => typeof v === 'number')))
   const customersById = new Map<number, { id:number; name:string; phone:string }>()
@@ -129,6 +130,7 @@ ipcMain.handle('get-orders-today', async () => {
     created_at: o.created_at,
     status: o.status,
     phone_id: o.phone_id,
+    fulfillment: (o.fulfillment ?? 'collection') as 'delivery' | 'collection',
     customer_name: o.customer_id != null ? customersById.get(o.customer_id)?.name : undefined,
     customer_phone: o.customer_id != null ? customersById.get(o.customer_id)?.phone : undefined,
     total: o.total,
@@ -139,9 +141,9 @@ ipcMain.handle('get-orders-today', async () => {
 ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   const odb = getOrdersDb();
   const order = odb.prepare(`
-    SELECT id, customer_id, phone_id, status, payment_method, created_at
+    SELECT id, customer_id, phone_id, status, payment_method, fulfillment, created_at
     FROM orders WHERE id = ?
-  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; payment_method: string | null; created_at:string } | undefined;
+  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; payment_method: string | null; fulfillment: 'delivery' | 'collection' | null; created_at:string } | undefined;
   if (!order) return null;
 
   const items = odb.prepare(`
@@ -153,9 +155,9 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
 
   const subtotal = items.reduce((s, it) => s + it.price * it.quantity, 0);
 
-  let customer: { id:number; name:string; phone:string } | null = null;
+  let customer: { id:number; name:string; phone:string; address:string } | null = null;
   if (order.customer_id != null) {
-    const row = db.prepare('SELECT id, name, phone FROM customers WHERE id = ?').get(order.customer_id) as { id:number; name:string; phone:string } | undefined
+    const row = db.prepare('SELECT id, name, phone, address FROM customers WHERE id = ?').get(order.customer_id) as { id:number; name:string; phone:string; address:string } | undefined
     if (row) customer = row;
   }
 
@@ -169,7 +171,7 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   }
 
   return {
-    order: { id: order.id, status: order.status, phone_id: order.phone_id, payment_method: order.payment_method, created_at: order.created_at },
+    order: { id: order.id, status: order.status, phone_id: order.phone_id, payment_method: order.payment_method, fulfillment: (order.fulfillment ?? 'collection') as 'delivery' | 'collection', created_at: order.created_at },
     customer,
     items: items.map(it => ({ dish_id: it.dish_id, name: names.get(it.dish_id) ?? `Dish #${it.dish_id}` , quantity: it.quantity, price: it.price })),
     subtotal,
@@ -265,11 +267,11 @@ ipcMain.handle('create-or-update-customer', async (_e, customer: { name: string;
 });
 
 // New: create order with items at checkout
-ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => {
+ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; fulfillment?: 'delivery' | 'collection'; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => {
   try {
     const odb = getOrdersDb();
-    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, payment_method, status) VALUES (?, ?, ?, ?)')
-      .run(payload.customerId, payload.phoneId, payload.payment_method ?? null, payload.payment_method ? 'paid' : 'pending');
+    const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, fulfillment, payment_method, status) VALUES (?, ?, ?, ?, ?)')
+      .run(payload.customerId, payload.phoneId, payload.fulfillment ?? 'collection', payload.payment_method ?? null, payload.payment_method ? 'paid' : 'pending');
     const orderId = orderInfo.lastInsertRowid as number;
     if (payload.items && payload.items.length > 0) {
       const stmt = odb.prepare('INSERT INTO order_items (order_id, dish_id, quantity, price) VALUES (?, ?, ?, ?)');

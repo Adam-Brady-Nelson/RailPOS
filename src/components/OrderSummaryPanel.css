@@ -1,0 +1,102 @@
+/* Panel container */
+.order-summary-panel {
+  background: #fff;
+  border-left: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.order-summary-panel__header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.order-summary-panel__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.order-summary-panel__subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.order-summary-panel__body {
+  padding: 1rem;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+.order-summary-panel__empty {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+.order-summary-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.order-summary-panel__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.order-summary-panel__item-name {
+  font-weight: 500;
+}
+.order-summary-panel__item-price {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+.order-summary-panel__item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.order-summary-panel__btn {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s, border 0.2s;
+}
+.order-summary-panel__btn--qty:hover {
+  background: #f3f4f6;
+}
+.order-summary-panel__btn--remove {
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  background: #fff;
+}
+.order-summary-panel__btn--remove:hover {
+  background: #fee2e2;
+}
+
+.order-summary-panel__footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  background: #fff;
+}
+.order-summary-panel__total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.order-summary-panel__payment {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}

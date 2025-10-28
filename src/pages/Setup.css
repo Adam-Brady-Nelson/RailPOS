@@ -1,0 +1,35 @@
+/* Setup page layout and styles */
+.setup-container {
+  padding: 1.5rem;
+}
+.setup-back {
+  margin-bottom: 12px;
+}
+.setup-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.setup-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.setup-link {
+  padding: 10px 14px;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  border: 1px solid #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s;
+}
+.setup-link:hover {
+  background: #1746a2;
+}
+.setup-desc {
+  color: #374151;
+  font-size: 1rem;
+}

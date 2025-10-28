@@ -1,0 +1,89 @@
+/* Panel container */
+.items-panel {
+  grid-column: span 2;
+}
+
+.items-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.items-panel__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.items-panel__add-btn {
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  background: #10b981;
+  color: #fff;
+  border: 1px solid #10b981;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.items-panel__add-btn:hover {
+  background: #059669;
+}
+
+.items-panel__empty {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+.items-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.items-panel__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.5rem;
+}
+
+.items-panel__item-name {
+  font-weight: 500;
+}
+
+.items-panel__item-price {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.items-panel__item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.items-panel__edit-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+}
+
+.items-panel__delete-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  background: #fff;
+  cursor: pointer;
+}

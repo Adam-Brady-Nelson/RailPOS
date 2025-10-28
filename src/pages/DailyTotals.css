@@ -1,0 +1,50 @@
+/* DailyTotals page-specific styles */
+
+.daily-totals__container {
+  padding: 24px;
+}
+
+.daily-totals__title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.daily-totals__error {
+  color: #dc2626;
+}
+
+.daily-totals__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .daily-totals__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 1024px) {
+  .daily-totals__grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.daily-totals__card {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.daily-totals__label {
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.daily-totals__value {
+  font-size: 2rem;
+  font-weight: 700;
+}

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import './MenuManager.css';
 import { useConfirm } from '../components/ConfirmProvider';
 import BackButton from '../components/BackButton';
 import CategoriesPanel, { Category } from '../components/CategoriesPanel';
@@ -107,12 +108,12 @@ const MenuManager: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      <div style={{ marginBottom: 12 }}>
+  <div className="menu-manager-container">
+      <div className="menu-manager-back">
         <BackButton to="/setup">← Back to Setup</BackButton>
       </div>
-      <h1 className="text-2xl font-bold mb-4">Manage Menu</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <h1 className="menu-manager-title">Manage Menu</h1>
+      <div className="menu-manager-grid">
         <CategoriesPanel
           categories={categories}
           loading={loadingCats}
@@ -137,13 +138,13 @@ const MenuManager: React.FC = () => {
         <div role="dialog" aria-modal="true" onClick={() => setCatModal({ open: false, name: '' })} style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
           <div onClick={(e) => e.stopPropagation()} style={{ position: 'relative', zIndex: 1, width: '90%', maxWidth: 420, borderRadius: 12, background: '#fff', border: '1px solid #e5e7eb', padding: 16 }}>
-            <h3 className="text-lg font-semibold mb-2">{catModal.id ? 'Rename Category' : 'New Category'}</h3>
-            <label className="block mb-2 text-sm text-gray-700">Name</label>
-            <input value={catModal.name} onChange={(e) => setCatModal(m => ({ ...m, name: e.target.value, error: undefined }))} className="w-full border rounded px-3 py-2" placeholder="e.g. Starters" />
-            {catModal.error && <div className="text-red-600 text-sm mt-2">{catModal.error}</div>}
-            <div className="flex justify-end gap-2 mt-4">
-              <button onClick={() => setCatModal({ open: false, name: '' })} className="px-3 py-1 rounded border">Cancel</button>
-              <button onClick={saveCategory} className="px-3 py-1 rounded bg-blue-600 text-white border border-blue-600">Save</button>
+            <h3 className="modal-title">{catModal.id ? 'Rename Category' : 'New Category'}</h3>
+            <label className="modal-label">Name</label>
+            <input value={catModal.name} onChange={(e) => setCatModal(m => ({ ...m, name: e.target.value, error: undefined }))} className="modal-input" placeholder="e.g. Starters" />
+            {catModal.error && <div className="modal-error">{catModal.error}</div>}
+            <div className="modal-actions">
+              <button onClick={() => setCatModal({ open: false, name: '' })} className="modal-btn-cancel">Cancel</button>
+              <button onClick={saveCategory} className="modal-btn-save">Save</button>
             </div>
           </div>
         </div>
@@ -154,19 +155,19 @@ const MenuManager: React.FC = () => {
         <div role="dialog" aria-modal="true" onClick={() => setDishModal({ open: false, name: '', price: '' })} style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
           <div onClick={(e) => e.stopPropagation()} style={{ position: 'relative', zIndex: 1, width: '90%', maxWidth: 420, borderRadius: 12, background: '#fff', border: '1px solid #e5e7eb', padding: 16 }}>
-            <h3 className="text-lg font-semibold mb-2">{dishModal.id ? 'Edit Item' : 'New Item'}</h3>
-            <div className="mb-3">
-              <label className="block mb-2 text-sm text-gray-700">Name</label>
-              <input value={dishModal.name} onChange={(e) => setDishModal(m => ({ ...m, name: e.target.value, error: undefined }))} className="w-full border rounded px-3 py-2" placeholder="e.g. Spring Rolls" />
+            <h3 className="modal-title">{dishModal.id ? 'Edit Item' : 'New Item'}</h3>
+            <div className="modal-field">
+              <label className="modal-label">Name</label>
+              <input value={dishModal.name} onChange={(e) => setDishModal(m => ({ ...m, name: e.target.value, error: undefined }))} className="modal-input" placeholder="e.g. Spring Rolls" />
             </div>
-            <div>
-              <label className="block mb-2 text-sm text-gray-700">Price</label>
-              <input value={dishModal.price} onChange={(e) => setDishModal(m => ({ ...m, price: e.target.value, error: undefined }))} className="w-full border rounded px-3 py-2" placeholder="e.g. 9.99" />
+            <div className="modal-field">
+              <label className="modal-label">Price</label>
+              <input value={dishModal.price} onChange={(e) => setDishModal(m => ({ ...m, price: e.target.value, error: undefined }))} className="modal-input" placeholder="e.g. 9.99" />
             </div>
-            {dishModal.error && <div className="text-red-600 text-sm mt-2">{dishModal.error}</div>}
-            <div className="flex justify-end gap-2 mt-4">
-              <button onClick={() => setDishModal({ open: false, name: '', price: '' })} className="px-3 py-1 rounded border">Cancel</button>
-              <button onClick={saveDish} className="px-3 py-1 rounded bg-green-600 text-white border border-green-600">Save</button>
+            {dishModal.error && <div className="modal-error">{dishModal.error}</div>}
+            <div className="modal-actions">
+              <button onClick={() => setDishModal({ open: false, name: '', price: '' })} className="modal-btn-cancel">Cancel</button>
+              <button onClick={saveDish} className="modal-btn-save">Save</button>
             </div>
           </div>
         </div>

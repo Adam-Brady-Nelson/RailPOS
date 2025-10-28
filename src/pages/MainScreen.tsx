@@ -4,6 +4,7 @@ import { useConfirm } from '../components/ConfirmProvider';
 import BottomNav from '../components/BottomNav';
 import ShiftControls from '../components/ShiftControls';
 import PhoneTile from '../components/PhoneTile';
+import './MainScreen.css';
 
 const MainScreen: React.FC = () => {
   const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
@@ -32,11 +33,11 @@ const MainScreen: React.FC = () => {
   }, [location?.state, confirm]);
 
   return (
-    <div className="min-h-screen bg-gray-100" style={{ overflowY: 'hidden' }}>
-      <div className="max-w-6xl mx-auto pt-12 px-4">
-        <h1 className="text-5xl font-extrabold text-center mb-10">RailPOS</h1>
+    <div className="main-screen__container">
+      <div className="main-screen__content">
+        <h1 className="main-screen__title">RailPOS</h1>
         <ShiftControls shift={shift} onShiftChange={setShift} />
-        <div className="flex justify-center" style={{ gap: '6rem' }}>
+        <div className="main-screen__phones">
           <PhoneTile phoneId={1} shiftActive={!!shift} />
           <PhoneTile phoneId={2} shiftActive={!!shift} />
         </div>

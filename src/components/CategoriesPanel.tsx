@@ -1,4 +1,5 @@
 import React from 'react';
+import './CategoriesPanel.css';
 
 export type Category = { id: number; name: string };
 
@@ -14,28 +15,28 @@ interface Props {
 
 const CategoriesPanel: React.FC<Props> = ({ categories, loading, selectedId, onSelect, onAdd, onRename, onDelete }) => {
   return (
-    <section className="md:col-span-1">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold">Categories</h2>
-        <button onClick={onAdd} className="px-3 py-1 rounded bg-blue-600 text-white border border-blue-600 hover:bg-blue-700">+ Add</button>
+  <section className="categories-panel">
+      <div className="categories-panel__header">
+        <h2 className="categories-panel__title">Categories</h2>
+        <button onClick={onAdd} className="categories-panel__add-btn">+ Add</button>
       </div>
-      <ul className="space-y-2">
+  <ul className="categories-panel__list">
         {loading ? (
           <li>Loading…</li>
         ) : categories.length === 0 ? (
-          <li className="text-gray-600">No categories yet.</li>
+          <li className="categories-panel__empty">No categories yet.</li>
         ) : (
           categories.map((cat) => (
             <li
               key={cat.id}
-              className={`flex items-center justify-between border rounded p-2 ${selectedId === cat.id ? 'bg-blue-50 border-blue-300' : 'bg-white'}`}
+              className={`categories-panel__item${selectedId === cat.id ? ' categories-panel__item--selected' : ''}`}
             >
-              <button onClick={() => onSelect(cat.id)} className="text-left font-medium flex-1">
+              <button onClick={() => onSelect(cat.id)} className="categories-panel__item-btn">
                 {cat.name}
               </button>
-              <div className="flex items-center gap-2 ml-2">
-                <button onClick={() => onRename(cat)} className="px-2 py-1 text-sm rounded border">Rename</button>
-                <button onClick={() => onDelete(cat)} className="px-2 py-1 text-sm rounded border border-red-300 text-red-700">Delete</button>
+              <div className="categories-panel__item-actions">
+                <button onClick={() => onRename(cat)} className="categories-panel__rename-btn">Rename</button>
+                <button onClick={() => onDelete(cat)} className="categories-panel__delete-btn">Delete</button>
               </div>
             </li>
           ))

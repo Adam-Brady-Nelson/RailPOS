@@ -1,0 +1,28 @@
+/* MainScreen page-specific styles */
+
+.main-screen__container {
+  min-height: 100vh;
+  background: #f3f4f6;
+  overflow-y: hidden;
+}
+
+.main-screen__content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding-top: 48px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.main-screen__title {
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.main-screen__phones {
+  display: flex;
+  justify-content: center;
+  gap: 96px;
+}

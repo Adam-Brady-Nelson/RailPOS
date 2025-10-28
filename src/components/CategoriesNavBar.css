@@ -1,7 +1,39 @@
+.categories-navbar {
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  z-index: 20;
+  position: fixed;
+  left: 0;
+  right: 0;
+}
+
+.categories-navbar__scroll {
+  height: 100%;
+  overflow-x: auto;
+}
+
+.categories-navbar__inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 12px;
+  min-width: max-content;
+}
+
 .cat-btn {
   padding: 12px 18px;
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.95rem;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  border: 2px solid #d1d5db;
+  background: #fff;
+  color: #111827;
+}
+.cat-btn.selected {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
 }

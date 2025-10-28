@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import OrdersTable, { OrderRow } from '../components/OrdersTable';
 import BackButton from '../components/BackButton';
 import OrderDetailsPanel from '../components/OrderDetailsPanel';
+import './OrderList.css';
 
 const ASIDE_WIDTH = 420; // px
 
@@ -70,15 +71,15 @@ const OrderList: React.FC = () => {
   }, [selectedId]);
 
   return (
-    <div className="p-4" style={{ paddingRight: ASIDE_WIDTH + 24 }}>
-      <div style={{ marginBottom: 12 }}>
+    <div className="order-list__container">
+      <div className="order-list__back">
         <BackButton to="/">← Back</BackButton>
       </div>
-      <h1 className="text-2xl font-bold mb-4">Today's Orders</h1>
+      <h1 className="order-list__title">Today's Orders</h1>
       {loading ? (
         <div>Loading orders…</div>
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="order-list__error">{error}</div>
       ) : orders.length === 0 ? (
         <div>No orders yet today.</div>
       ) : (

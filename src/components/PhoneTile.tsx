@@ -24,11 +24,11 @@ const PhoneTile: React.FC<PhoneTileProps> = ({ phoneId, shiftActive }) => {
           });
         }
       }}
-      className="phone-tile flex items-center justify-center border-4 transition"
+      className="phone-tile"
       aria-disabled={!shiftActive}
       data-testid={`phone-tile-${phoneId}`}
     >
-      <span className="phone-tile__label text-center">{`Phone ${phoneId}`}</span>
+      <span className="phone-tile__label">{`Phone ${phoneId}`}</span>
     </Link>
   );
 };

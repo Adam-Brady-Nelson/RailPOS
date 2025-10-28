@@ -13,9 +13,12 @@ interface Props {
 
 const CategoriesNavBar: React.FC<Props> = ({ categories, selectedCategoryId, onSelect, height = 112, bottomOffset = 0 }) => {
   return (
-    <div style={{ height, bottom: bottomOffset, position: 'fixed', left: 0, right: 0 }} className="bg-white border-t z-20">
-      <div className="h-full overflow-x-auto">
-        <div className="flex items-center gap-2 px-3 py-3 min-w-max">
+    <div
+      style={{ height, bottom: bottomOffset, position: 'fixed', left: 0, right: 0 }}
+      className="categories-navbar"
+    >
+      <div className="categories-navbar__scroll">
+        <div className="categories-navbar__inner">
           {categories.map((cat) => (
             <button
               key={cat.id}

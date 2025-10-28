@@ -1,0 +1,115 @@
+/* Panel container */
+.order-details-panel {
+  background: #fff;
+  border-left: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.order-details-panel__header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.order-details-panel__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.order-details-panel__subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.order-details-panel__body {
+  padding: 1rem;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+.order-details-panel__empty {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+.order-details-panel__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.order-details-panel__customer {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: #fff;
+}
+.order-details-panel__customer-title {
+  font-weight: 600;
+}
+.order-details-panel__customer-name {
+  font-size: 0.95rem;
+  color: #374151;
+}
+.order-details-panel__customer-phone {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.order-details-panel__items-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.order-details-panel__items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.order-details-panel__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.5rem;
+}
+.order-details-panel__item-name {
+  font-weight: 500;
+}
+.order-details-panel__item-price {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+.order-details-panel__item-total {
+  font-weight: 600;
+}
+
+.order-details-panel__edit-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  border: 1px solid #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.order-details-panel__edit-btn:hover {
+  background: #1746a2;
+}
+
+.order-details-panel__footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  background: #fff;
+}
+.order-details-panel__total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.15rem;
+  font-weight: 600;
+}

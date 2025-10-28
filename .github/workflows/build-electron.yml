@@ -20,8 +20,8 @@ jobs:
         run: npm ci
       - name: Build app
         run: npm run build
-      - name: Package for Linux
-        run: npm run package:linux
+      - name: Package for Linux (no publish)
+        run: npx electron-builder -l -p never
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
@@ -41,8 +41,8 @@ jobs:
         run: npm ci
       - name: Build app
         run: npm run build
-      - name: Package for Windows
-        run: npm run package:win
+      - name: Package for Windows (no publish)
+        run: npx electron-builder -w -p never
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:

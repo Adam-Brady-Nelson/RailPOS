@@ -29,6 +29,9 @@ declare global {
       startShift: () => Promise<{ path: string; date: string }>
       getCurrentShift: () => Promise<{ path: string; date: string } | null>
   closeShift: () => Promise<boolean>
+      // Setup / bootstrap
+      isDbPresent: () => Promise<boolean>
+      initializeDb: () => Promise<boolean>
       onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => () => void
     }
   }
@@ -56,6 +59,9 @@ contextBridge.exposeInMainWorld('db', {
   startShift: () => ipcRenderer.invoke('start-shift'),
   getCurrentShift: () => ipcRenderer.invoke('get-current-shift'),
   closeShift: () => ipcRenderer.invoke('close-shift'),
+  // Setup / bootstrap
+  isDbPresent: () => ipcRenderer.invoke('is-db-present'),
+  initializeDb: () => ipcRenderer.invoke('initialize-db'),
   onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => {
     const listener = (_: unknown, payload: unknown) => handler(payload as { entity: string; action: string; id: number | string; category_id?: number })
     ipcRenderer.on('data-changed', listener)

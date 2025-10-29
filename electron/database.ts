@@ -23,8 +23,24 @@ if (!isDev) {
   try { fs.mkdirSync(baseDir, { recursive: true }); } catch { /* best-effort ensure userData exists */ }
 }
 export const dbPath = path.join(baseDir, 'railpos.sqlite')
-console.log('[DB] Using database at:', dbPath)
-const db = new Database(dbPath, { verbose: console.log });
+console.log('[DB] Primary DB path will be:', dbPath)
+
+let primaryDb: BetterSqlite3Database | null = null;
+
+export function databaseExists(): boolean {
+  try {
+    return fs.existsSync(dbPath);
+  } catch {
+    return false;
+  }
+}
+
+export function getDb(): BetterSqlite3Database {
+  if (!primaryDb) {
+    primaryDb = new Database(dbPath, { verbose: console.log });
+  }
+  return primaryDb;
+}
 
 // Per-shift orders database handling
 const shiftsDir = path.join(baseDir, 'shifts');
@@ -107,6 +123,7 @@ export function getOrdersDb(): BetterSqlite3Database {
 
 export const initializeDatabase = () => {
   try {
+    const db = getDb();
     const hasCategoriesTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='categories'").get();
     if (!hasCategoriesTable) {
       db.exec(`
@@ -128,9 +145,9 @@ export const initializeDatabase = () => {
       ]);
     }
 
-    const hasDishesTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='dishes'").get();
+    const hasDishesTable = getDb().prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='dishes'").get();
     if (!hasDishesTable) {
-      db.exec(`
+      getDb().exec(`
         CREATE TABLE dishes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
@@ -140,8 +157,8 @@ export const initializeDatabase = () => {
         );
       `);
       // Seed with default data
-      const insertDish = db.prepare('INSERT INTO dishes (name, price, category_id) VALUES (?, ?, ?)');
-      const insertManyDishes = db.transaction((dishes) => {
+      const insertDish = getDb().prepare('INSERT INTO dishes (name, price, category_id) VALUES (?, ?, ?)');
+      const insertManyDishes = getDb().transaction((dishes) => {
         for (const dish of dishes) insertDish.run(dish.name, dish.price, dish.category_id);
       });
       insertManyDishes([
@@ -152,9 +169,9 @@ export const initializeDatabase = () => {
       ]);
     }
 
-    const hasCustomersTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='customers'").get();
+    const hasCustomersTable = getDb().prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='customers'").get();
     if (!hasCustomersTable) {
-      db.exec(`
+      getDb().exec(`
         CREATE TABLE customers (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
@@ -171,4 +188,4 @@ export const initializeDatabase = () => {
   }
 };
 
-export default db;
+// No default export to avoid eager DB creation on module import.

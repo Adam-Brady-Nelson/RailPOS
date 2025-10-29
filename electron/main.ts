@@ -1,7 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
-import { initializeDatabase, getOrdersDb, startNewShift, getCurrentShift, closeCurrentShift } from './database'
-import db from './database'
+import { initializeDatabase, getOrdersDb, startNewShift, getCurrentShift, closeCurrentShift, getDb, databaseExists } from './database'
 // Shift controls
 ipcMain.handle('close-shift', async () => {
   closeCurrentShift();
@@ -47,53 +46,53 @@ async function createWindow() {
 
 // IPC handlers
 ipcMain.handle('get-categories', async () => {
-  return db.prepare('SELECT * FROM categories').all();
+  return getDb().prepare('SELECT * FROM categories').all();
 })
 
 ipcMain.handle('get-dishes', async (_event, categoryId) => {
-  return db.prepare('SELECT * FROM dishes WHERE category_id = ?').all(categoryId);
+  return getDb().prepare('SELECT * FROM dishes WHERE category_id = ?').all(categoryId);
 })
 
 // CRUD: Categories
 ipcMain.handle('create-category', async (_e, name: string) => {
-  const info = db.prepare('INSERT INTO categories (name) VALUES (?)').run(name)
+  const info = getDb().prepare('INSERT INTO categories (name) VALUES (?)').run(name)
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'category', action: 'create', id: info.lastInsertRowid }))
   return info.lastInsertRowid
 })
 
 ipcMain.handle('update-category', async (_e, id: number, name: string) => {
-  const info = db.prepare('UPDATE categories SET name = ? WHERE id = ?').run(name, id)
+  const info = getDb().prepare('UPDATE categories SET name = ? WHERE id = ?').run(name, id)
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'category', action: 'update', id }))
   return info.changes
 })
 
 ipcMain.handle('delete-category', async (_e, id: number) => {
-  const info = db.prepare('DELETE FROM categories WHERE id = ?').run(id)
+  const info = getDb().prepare('DELETE FROM categories WHERE id = ?').run(id)
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'category', action: 'delete', id }))
   return info.changes
 })
 
 // CRUD: Dishes
 ipcMain.handle('create-dish', async (_e, payload: { name: string; price: number; category_id: number }) => {
-  const info = db.prepare('INSERT INTO dishes (name, price, category_id) VALUES (?, ?, ?)').run(payload.name, payload.price, payload.category_id)
+  const info = getDb().prepare('INSERT INTO dishes (name, price, category_id) VALUES (?, ?, ?)').run(payload.name, payload.price, payload.category_id)
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'dish', action: 'create', id: info.lastInsertRowid, category_id: payload.category_id }))
   return info.lastInsertRowid
 })
 
 ipcMain.handle('update-dish', async (_e, id: number, payload: { name?: string; price?: number; category_id?: number }) => {
-  const current = db.prepare('SELECT * FROM dishes WHERE id = ?').get(id) as { id: number; name: string; price: number; category_id: number } | undefined
+  const current = getDb().prepare('SELECT * FROM dishes WHERE id = ?').get(id) as { id: number; name: string; price: number; category_id: number } | undefined
   if (!current) return 0
   const name = payload.name ?? current.name
   const price = payload.price ?? current.price
   const category_id = payload.category_id ?? current.category_id
-  const info = db.prepare('UPDATE dishes SET name = ?, price = ?, category_id = ? WHERE id = ?').run(name, price, category_id, id)
+  const info = getDb().prepare('UPDATE dishes SET name = ?, price = ?, category_id = ? WHERE id = ?').run(name, price, category_id, id)
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'dish', action: 'update', id, category_id }))
   return info.changes
 })
 
 ipcMain.handle('delete-dish', async (_e, id: number) => {
-  const current = db.prepare('SELECT category_id FROM dishes WHERE id = ?').get(id) as { category_id?: number } | undefined
-  const info = db.prepare('DELETE FROM dishes WHERE id = ?').run(id)
+  const current = getDb().prepare('SELECT category_id FROM dishes WHERE id = ?').get(id) as { category_id?: number } | undefined
+  const info = getDb().prepare('DELETE FROM dishes WHERE id = ?').run(id)
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'dish', action: 'delete', id, category_id: current?.category_id }))
   return info.changes
 })
@@ -121,7 +120,7 @@ ipcMain.handle('get-orders-today', async () => {
   const customersById = new Map<number, { id:number; name:string; phone:string }>()
   if (ids.length > 0) {
     const placeholders = ids.map(() => '?').join(',')
-    const rows = db.prepare(`SELECT id, name, phone FROM customers WHERE id IN (${placeholders})`).all(...ids) as Array<{ id:number; name:string; phone:string }>
+    const rows = getDb().prepare(`SELECT id, name, phone FROM customers WHERE id IN (${placeholders})`).all(...ids) as Array<{ id:number; name:string; phone:string }>
     for (const r of rows) customersById.set(r.id, r)
   }
 
@@ -157,7 +156,7 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
 
   let customer: { id:number; name:string; phone:string; address:string } | null = null;
   if (order.customer_id != null) {
-    const row = db.prepare('SELECT id, name, phone, address FROM customers WHERE id = ?').get(order.customer_id) as { id:number; name:string; phone:string; address:string } | undefined
+    const row = getDb().prepare('SELECT id, name, phone, address FROM customers WHERE id = ?').get(order.customer_id) as { id:number; name:string; phone:string; address:string } | undefined
     if (row) customer = row;
   }
 
@@ -166,7 +165,7 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   const names = new Map<number, string>();
   if (dishIds.length > 0) {
     const placeholders = dishIds.map(() => '?').join(',');
-    const rows = db.prepare(`SELECT id, name FROM dishes WHERE id IN (${placeholders})`).all(...dishIds) as Array<{ id:number; name:string }>;
+    const rows = getDb().prepare(`SELECT id, name FROM dishes WHERE id IN (${placeholders})`).all(...dishIds) as Array<{ id:number; name:string }>;
     for (const r of rows) names.set(r.id, r.name);
   }
 
@@ -213,7 +212,7 @@ ipcMain.handle('search-customers-by-phone', async (_e, query: string, limit: num
   const q = (query ?? '').trim();
   if (q.length === 0) return [];
   const like = `%${q}%`;
-  const rows = db.prepare(`
+  const rows = getDb().prepare(`
     SELECT id, name, phone, address
     FROM customers
     WHERE phone LIKE ?
@@ -225,15 +224,15 @@ ipcMain.handle('search-customers-by-phone', async (_e, query: string, limit: num
 
 // CRUD: Customers & Orders
 ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { customer: { name: string; phone: string; address: string }, phoneId: number }) => {
-  return db.transaction(() => {
+  return getDb().transaction(() => {
     // Find or create customer
-  const customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
+  const customerRecord = getDb().prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
     let customerId: number;
     if (customerRecord) {
       customerId = customerRecord.id;
-      db.prepare('UPDATE customers SET name = ?, address = ? WHERE id = ?').run(customer.name, customer.address, customerId);
+      getDb().prepare('UPDATE customers SET name = ?, address = ? WHERE id = ?').run(customer.name, customer.address, customerId);
     } else {
-      const info = db.prepare('INSERT INTO customers (name, phone, address) VALUES (?, ?, ?)').run(customer.name, customer.phone, customer.address);
+      const info = getDb().prepare('INSERT INTO customers (name, phone, address) VALUES (?, ?, ?)').run(customer.name, customer.phone, customer.address);
       customerId = info.lastInsertRowid as number;
     }
 
@@ -251,14 +250,14 @@ ipcMain.handle('create-customer-and-order', async (_e, { customer, phoneId }: { 
 
 // New: create or update a customer only (no order)
 ipcMain.handle('create-or-update-customer', async (_e, customer: { name: string; phone: string; address: string }) => {
-  return db.transaction(() => {
-  const customerRecord = db.prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
+  return getDb().transaction(() => {
+  const customerRecord = getDb().prepare('SELECT id FROM customers WHERE phone = ?').get(customer.phone) as { id: number } | undefined
     let customerId: number;
     if (customerRecord) {
       customerId = customerRecord.id;
-      db.prepare('UPDATE customers SET name = ?, address = ? WHERE id = ?').run(customer.name, customer.address, customerId);
+      getDb().prepare('UPDATE customers SET name = ?, address = ? WHERE id = ?').run(customer.name, customer.address, customerId);
     } else {
-      const info = db.prepare('INSERT INTO customers (name, phone, address) VALUES (?, ?, ?)').run(customer.name, customer.phone, customer.address);
+      const info = getDb().prepare('INSERT INTO customers (name, phone, address) VALUES (?, ?, ?)').run(customer.name, customer.phone, customer.address);
       customerId = info.lastInsertRowid as number;
     }
     BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'customer', action: 'create', id: customerId }));
@@ -335,6 +334,16 @@ ipcMain.handle('get-current-shift', async () => {
   return getCurrentShift();
 })
 
+// First-run checks and initialization
+ipcMain.handle('is-db-present', async () => {
+  return databaseExists();
+})
+
+ipcMain.handle('initialize-db', async () => {
+  initializeDatabase();
+  return true;
+})
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
@@ -344,6 +353,6 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(() => {
-  initializeDatabase()
+  // Do not auto-initialize. Let the renderer decide via setup flow.
   createWindow()
 })

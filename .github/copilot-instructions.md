@@ -45,7 +45,7 @@ Conventions and gotchas
 - When running Vite in browser, `window.db` is unavailable—use Electron runtime to test features
 
 Key files
-- `electron/main.ts` (IPC + window lifecycle), `electron/preload.ts` (`window.db` API + types), `electron/database.ts` (schema + shift DB), `tsup.config.ts`, `vite.config.js`, `package.json`, renderer in `src/pages/*` and `src/components/*`
+- `electron/main.ts` (IPC + window lifecycle), `electron/preload.ts` (`window.db`/`window.settings` APIs + types), `electron/database.ts` (schema + shift DB), `electron/settings.ts` (persisted AppStyle), `tsup.config.ts`, `vite.config.js`, `package.json`, renderer in `src/pages/*` and `src/components/*`
 
 Editing rules for agents
 - If you change an IPC name/signature, update main, preload, and all renderer callsites together; keep return shapes (`lastInsertRowid`, `.changes`, etc.) consistent
@@ -53,3 +53,10 @@ Editing rules for agents
 
 Questions / gaps
 - If stricter typings for `window.db` are desired, propose an interface in `preload.ts` and propagate to components
+
+Styles (TAKEAWAY vs BAR)
+- Persisted style in `electron/settings.ts`; IPC: `get-settings`/`set-settings`; renderer via `window.settings.get|set|onChanged`.
+- Router switches routes based on style in `src/App.tsx`:
+  - TAKEAWAY: current flow (MainScreen, CustomerForm → OrderScreen, Orders, Totals).
+  - BAR: single-screen POS at `/` → `src/pages/bar/BarOrderScreen.tsx` with quick-sale (`window.db.quickSale`).
+- Bar screen reuses existing `OrderScreen.css`, `OrderSummaryPanel`, `ItemsGrid`, `CategoriesNavBar`, and checkout button styles.

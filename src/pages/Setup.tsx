@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 import './Setup.css';
@@ -8,13 +8,18 @@ const Setup: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [dbPresent, setDbPresent] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [enabled, setEnabled] = useState<Array<'TAKEAWAY' | 'BAR'>>(['TAKEAWAY']);
+  const [active, setActive] = useState<'TAKEAWAY' | 'BAR'>('TAKEAWAY');
 
   const handleInitialize = useCallback(async () => {
     setBusy(true);
     setError(null);
     try {
-  await window.db.initializeDb();
-  setDbPresent(true);
+  // Persist chosen styles first
+  // @ts-ignore optional in browser
+  await window.settings?.set?.({ enabledStyles: enabled, activeStyle: active });
+      await window.db.initializeDb();
+      setDbPresent(true);
       // After creating schema, route to main screen
       navigate('/', { replace: true });
     } catch (e: unknown) {
@@ -23,7 +28,7 @@ const Setup: React.FC = () => {
     } finally {
       setBusy(false);
     }
-  }, [navigate]);
+  }, [navigate, enabled, active]);
 
   React.useEffect(() => {
     (async () => {
@@ -36,6 +41,19 @@ const Setup: React.FC = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        // @ts-ignore
+        const s = await window.settings?.get?.();
+        if (s) {
+          setEnabled(s.enabledStyles ?? [(s.style as 'TAKEAWAY' | 'BAR') ?? 'TAKEAWAY']);
+          setActive(s.activeStyle ?? (s.style as 'TAKEAWAY' | 'BAR') ?? 'TAKEAWAY');
+        }
+      } catch { /* ignore */ }
+    })();
+  }, []);
+
   return (
   <div className="setup-container">
       <div className="setup-back">
@@ -43,6 +61,40 @@ const Setup: React.FC = () => {
       </div>
       <h1 className="setup-title">Setup</h1>
       <p style={{ marginTop: 8, marginBottom: 16 }}>Looks like this is your first time. Initialize the database to get started.</p>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 8 }}>Enable POS Systems</div>
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          <input
+            type="checkbox"
+            checked={enabled.includes('TAKEAWAY')}
+            onChange={(e) => {
+              setEnabled(prev => e.target.checked ? Array.from(new Set([...prev, 'TAKEAWAY'])) : prev.filter(s => s !== 'TAKEAWAY'))
+            }}
+          />{' '}
+          Takeaway (Customers, Delivery/Collection)
+        </label>
+        <label style={{ display: 'block' }}>
+          <input
+            type="checkbox"
+            checked={enabled.includes('BAR')}
+            onChange={(e) => {
+              setEnabled(prev => e.target.checked ? Array.from(new Set([...prev, 'BAR'])) : prev.filter(s => s !== 'BAR'))
+            }}
+          />{' '}
+          Bar (Single Screen, Quick Sale)
+        </label>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 8 }}>Default Active System</div>
+        <select
+          value={active}
+          onChange={(e) => setActive(e.target.value as 'TAKEAWAY' | 'BAR')}
+          disabled={enabled.length === 0}
+        >
+          {enabled.includes('TAKEAWAY') && <option value="TAKEAWAY">Takeaway</option>}
+          {enabled.includes('BAR') && <option value="BAR">Bar</option>}
+        </select>
+      </div>
       <button onClick={handleInitialize} className="setup-link" disabled={busy}>
         {busy ? 'Initializing…' : 'Initialize Database'}
       </button>

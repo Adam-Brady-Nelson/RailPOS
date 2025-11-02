@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
 import { initializeDatabase, getOrdersDb, startNewShift, getCurrentShift, closeCurrentShift, getDb, databaseExists } from './database'
+import { readSettings, writeSettings } from './settings'
 // Shift controls
 ipcMain.handle('close-shift', async () => {
   closeCurrentShift();
@@ -355,4 +356,32 @@ app.on('activate', () => {
 app.whenReady().then(() => {
   // Do not auto-initialize. Let the renderer decide via setup flow.
   createWindow()
+})
+
+// Settings IPC
+ipcMain.handle('get-settings', async () => {
+  return readSettings();
+})
+
+ipcMain.handle('set-settings', async (_e, partial: Partial<{ style: 'TAKEAWAY' | 'BAR' }>) => {
+  const updated = writeSettings(partial as any);
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('settings-changed', updated));
+  return updated;
+})
+
+// Quick sale (BAR mode or generic anonymous sale)
+ipcMain.handle('quick-sale', async (_e, payload: { items: Array<{ dish_id: number; quantity: number; price: number }>; payment_method: 'cash' | 'card' }) => {
+  const odb = getOrdersDb();
+  const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, fulfillment, payment_method, status) VALUES (?, ?, ?, ?, ?)')
+    .run(null, null, 'collection', payload.payment_method, 'paid');
+  const orderId = orderInfo.lastInsertRowid as number;
+  if (payload.items && payload.items.length > 0) {
+    const stmt = odb.prepare('INSERT INTO order_items (order_id, dish_id, quantity, price) VALUES (?, ?, ?, ?)');
+    const insertMany = odb.transaction((rows: Array<{ dish_id:number; quantity:number; price:number }>) => {
+      for (const it of rows) stmt.run(orderId, it.dish_id, it.quantity, it.price);
+    });
+    insertMany(payload.items);
+  }
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'create', id: orderId }));
+  return { orderId };
 })

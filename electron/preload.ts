@@ -33,6 +33,12 @@ declare global {
       isDbPresent: () => Promise<boolean>
       initializeDb: () => Promise<boolean>
       onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => () => void
+      quickSale: (items: Array<{ dish_id: number; quantity: number; price: number }>, method: 'cash' | 'card') => Promise<{ orderId: number }>
+    }
+    settings: {
+      get: () => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>
+      set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>) => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>
+      onChanged: (handler: (settings: { enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }) => void) => () => void
     }
   }
 }
@@ -66,5 +72,16 @@ contextBridge.exposeInMainWorld('db', {
     const listener = (_: unknown, payload: unknown) => handler(payload as { entity: string; action: string; id: number | string; category_id?: number })
     ipcRenderer.on('data-changed', listener)
     return () => ipcRenderer.removeListener('data-changed', listener)
+  },
+  quickSale: (items: Array<{ dish_id: number; quantity: number; price: number }>, method: 'cash' | 'card') => ipcRenderer.invoke('quick-sale', { items, payment_method: method }),
+})
+
+contextBridge.exposeInMainWorld('settings', {
+  get: () => ipcRenderer.invoke('get-settings'),
+  set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>) => ipcRenderer.invoke('set-settings', partial),
+  onChanged: (handler: (settings: { enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }) => void) => {
+    const listener = (_: unknown, payload: unknown) => handler(payload as { enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' })
+    ipcRenderer.on('settings-changed', listener)
+    return () => ipcRenderer.removeListener('settings-changed', listener)
   },
 })

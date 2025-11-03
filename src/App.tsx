@@ -10,6 +10,7 @@ import MenuManager from './pages/MenuManager';
 import BarOrderScreen from './pages/bar/BarOrderScreen';
 import RestaurantScreen from './pages/restaurant/RestaurantScreen';
 import RestaurantLayoutEditor from './pages/restaurant/RestaurantLayoutEditor';
+import RestaurantOrderScreen from './pages/restaurant/RestaurantOrderScreen';
 
 type AppStyle = 'TAKEAWAY' | 'BAR' | 'RESTAURANT';
 
@@ -26,7 +27,7 @@ const AppRoutes: React.FC = () => {
         if (!present && location.pathname !== '/setup') {
           navigate('/setup', { replace: true });
         }
-      } catch (e) {
+      } catch {
         // If check fails for any reason, be safe and show setup.
         if (location.pathname !== '/setup') navigate('/setup', { replace: true });
       }
@@ -37,11 +38,9 @@ const AppRoutes: React.FC = () => {
     let off = () => {};
     (async () => {
       try {
-        // @ts-ignore optional for browser-only Vite
         const s = await window.settings?.get?.();
         const st = ((s?.activeStyle ?? s?.style) ?? 'TAKEAWAY') as AppStyle;
         setStyle(st);
-        // @ts-ignore
         off = window.settings?.onChanged?.((ns: { activeStyle: AppStyle; style?: AppStyle }) => setStyle((ns.activeStyle ?? ns.style ?? 'TAKEAWAY') as AppStyle)) ?? (() => {});
       } catch {
         setStyle('TAKEAWAY');
@@ -68,6 +67,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/" element={<RestaurantScreen />} />
           <Route path="/setup" element={<Setup />} />
           <Route path="/restaurant-layout" element={<RestaurantLayoutEditor />} />
+          <Route path="/restaurant-order/:orderId" element={<RestaurantOrderScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
       ) : (

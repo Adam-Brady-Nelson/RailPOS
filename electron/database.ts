@@ -78,9 +78,10 @@ export function startNewShift(): ShiftInfo {
       customer_id INTEGER,
       phone_id INTEGER,
       status TEXT NOT NULL DEFAULT 'pending',
-      fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection','bar')) DEFAULT 'collection',
+      fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection','bar','restaurant')) DEFAULT 'collection',
       payment_method TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      table_id TEXT
     );
     CREATE TABLE IF NOT EXISTS order_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,10 +107,11 @@ export function getOrdersDb(): BetterSqlite3Database {
   ordersDb = new Database(info.path, { verbose: console.log });
   // Ensure schema migrations for existing shift DBs
   try {
-    const cols = ordersDb.prepare("PRAGMA table_info('orders')").all() as Array<{ name: string }>
+  const cols = ordersDb.prepare("PRAGMA table_info('orders')").all() as Array<{ name: string; type: string }>
     const hasPaymentMethod = cols.some(c => c.name === 'payment_method');
     const hasFulfillment = cols.some(c => c.name === 'fulfillment');
-    const hasTableId = cols.some(c => c.name === 'table_id');
+  const hasTableId = cols.some(c => c.name === 'table_id');
+  const tableIdCol = cols.find(c => c.name === 'table_id');
     if (!hasPaymentMethod) {
       ordersDb.exec("ALTER TABLE orders ADD COLUMN payment_method TEXT");
     }
@@ -118,9 +120,12 @@ export function getOrdersDb(): BetterSqlite3Database {
     }
     // If fulfillment exists but CHECK does not include 'bar', migrate table to relax constraint
     try {
-      const row = ordersDb.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='orders'").get() as { sql?: string } | undefined;
-      const createSql = row?.sql ?? '';
-      if (createSql.includes("CHECK (fulfillment IN ('delivery','collection'))") && !createSql.includes("'bar'")) {
+      const row2 = ordersDb.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='orders'").get() as { sql?: string } | undefined;
+      const createSql = row2?.sql ?? '';
+      const hasCheck = createSql.includes("CHECK (fulfillment IN (");
+      const missingBar = !createSql.includes("'bar'");
+      const missingRestaurant = !createSql.includes("'restaurant'");
+      if (hasCheck && (missingBar || missingRestaurant)) {
         ordersDb.exec('PRAGMA foreign_keys=off;');
         ordersDb.exec('BEGIN TRANSACTION;');
         ordersDb.exec(`
@@ -129,10 +134,10 @@ export function getOrdersDb(): BetterSqlite3Database {
             customer_id INTEGER,
             phone_id INTEGER,
             status TEXT NOT NULL DEFAULT 'pending',
-            fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection','bar')) DEFAULT 'collection',
+            fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection','bar','restaurant')) DEFAULT 'collection',
             payment_method TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            table_id INTEGER
+            table_id TEXT
           );
         `);
         // Copy data across; columns may or may not include table_id
@@ -152,7 +157,39 @@ export function getOrdersDb(): BetterSqlite3Database {
       console.warn('[DB] Could not migrate orders table to include bar fulfillment:', merr);
     }
     if (!hasTableId) {
-      ordersDb.exec("ALTER TABLE orders ADD COLUMN table_id INTEGER");
+      ordersDb.exec("ALTER TABLE orders ADD COLUMN table_id TEXT");
+    } else if ((tableIdCol?.type ?? '').toUpperCase() !== 'TEXT') {
+      // Migrate table_id to TEXT to match settings table ids
+      try {
+        ordersDb.exec('PRAGMA foreign_keys=off;');
+        ordersDb.exec('BEGIN TRANSACTION;');
+  // Recreate table with TEXT table_id and copy data across
+        ordersDb.exec(`
+          CREATE TABLE orders_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER,
+            phone_id INTEGER,
+            status TEXT NOT NULL DEFAULT 'pending',
+            fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection','bar','restaurant')) DEFAULT 'collection',
+            payment_method TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            table_id TEXT
+          );
+        `);
+        const existingCols = ordersDb.prepare("PRAGMA table_info('orders')").all() as Array<{ name: string }>;
+        const colNames = existingCols.map(c => c.name);
+        const selectCols = ['id','customer_id','phone_id','status','fulfillment','payment_method','created_at','table_id'].filter(n => colNames.includes(n)).join(', ');
+        const insertCols = ['id','customer_id','phone_id','status','fulfillment','payment_method','created_at','table_id'].filter(n => colNames.includes(n) || n === 'table_id').join(', ');
+        ordersDb.exec(`INSERT INTO orders_new (${insertCols}) SELECT ${selectCols} FROM orders;`);
+        ordersDb.exec('DROP TABLE orders;');
+        ordersDb.exec('ALTER TABLE orders_new RENAME TO orders;');
+        ordersDb.exec('COMMIT;');
+        ordersDb.exec('PRAGMA foreign_keys=on;');
+      } catch (e) {
+        console.warn('[DB] Could not migrate table_id to TEXT:', e);
+        ordersDb.exec('ROLLBACK;');
+        ordersDb.exec('PRAGMA foreign_keys=on;');
+      }
     }
   } catch (e) {
     console.warn('[DB] Orders schema migration check failed:', e);

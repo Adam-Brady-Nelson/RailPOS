@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
 import { initializeDatabase, getOrdersDb, startNewShift, getCurrentShift, closeCurrentShift, getDb, databaseExists } from './database'
-import { readSettings, writeSettings } from './settings'
+import { readSettings, writeSettings, AppSettings } from './settings'
 // Shift controls
 ipcMain.handle('close-shift', async () => {
   closeCurrentShift();
@@ -124,7 +124,7 @@ ipcMain.handle('get-orders-today', async () => {
     WHERE date(o.created_at, 'localtime') = date('now', 'localtime')
     GROUP BY o.id
     ORDER BY o.created_at DESC
-  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar' | null; customer_id:number|null; total:number }>
+  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar' | 'restaurant' | null; customer_id:number|null; total:number }>
 
   const ids = Array.from(new Set(orders.map(o => o.customer_id).filter((v): v is number => typeof v === 'number')))
   const customersById = new Map<number, { id:number; name:string; phone:string }>()
@@ -139,7 +139,7 @@ ipcMain.handle('get-orders-today', async () => {
     created_at: o.created_at,
     status: o.status,
     phone_id: o.phone_id,
-  fulfillment: (o.fulfillment ?? 'collection') as 'delivery' | 'collection' | 'bar',
+  fulfillment: (o.fulfillment ?? 'collection') as 'delivery' | 'collection' | 'bar' | 'restaurant',
     customer_name: o.customer_id != null ? customersById.get(o.customer_id)?.name : undefined,
     customer_phone: o.customer_id != null ? customersById.get(o.customer_id)?.phone : undefined,
     total: o.total,
@@ -152,7 +152,7 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   const order = odb.prepare(`
     SELECT id, customer_id, phone_id, status, payment_method, fulfillment, created_at
     FROM orders WHERE id = ?
-  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; payment_method: string | null; fulfillment: 'delivery' | 'collection' | null; created_at:string } | undefined;
+  `).get(orderId) as { id:number; customer_id:number|null; phone_id:number; status:string; payment_method: string | null; fulfillment: 'delivery' | 'collection' | 'bar' | 'restaurant' | null; created_at:string } | undefined;
   if (!order) return null;
 
   const items = odb.prepare(`
@@ -180,7 +180,7 @@ ipcMain.handle('get-order-details', async (_e, orderId: number) => {
   }
 
   return {
-    order: { id: order.id, status: order.status, phone_id: order.phone_id, payment_method: order.payment_method, fulfillment: (order.fulfillment ?? 'collection') as 'delivery' | 'collection', created_at: order.created_at },
+  order: { id: order.id, status: order.status, phone_id: order.phone_id, payment_method: order.payment_method, fulfillment: (order.fulfillment ?? 'collection') as 'delivery' | 'collection' | 'bar' | 'restaurant', created_at: order.created_at },
     customer,
     items: items.map(it => ({ dish_id: it.dish_id, name: names.get(it.dish_id) ?? `Dish #${it.dish_id}` , quantity: it.quantity, price: it.price })),
     subtotal,
@@ -276,7 +276,7 @@ ipcMain.handle('create-or-update-customer', async (_e, customer: { name: string;
 });
 
 // New: create order with items at checkout
-ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; fulfillment?: 'delivery' | 'collection'; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => {
+ipcMain.handle('create-order-with-items', async (_e, payload: { customerId: number; phoneId: number; fulfillment?: 'delivery' | 'collection' | 'bar' | 'restaurant'; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => {
   try {
     const odb = getOrdersDb();
     const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, fulfillment, payment_method, status) VALUES (?, ?, ?, ?, ?)')
@@ -372,8 +372,8 @@ ipcMain.handle('get-settings', async () => {
   return readSettings();
 })
 
-ipcMain.handle('set-settings', async (_e, partial: Partial<{ style: 'TAKEAWAY' | 'BAR' }>) => {
-  const updated = writeSettings(partial as any);
+ipcMain.handle('set-settings', async (_e, partial: Partial<AppSettings>) => {
+  const updated = writeSettings(partial);
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('settings-changed', updated));
   return updated;
 })
@@ -403,7 +403,7 @@ ipcMain.handle('get-restaurant-occupancy', async () => {
   for (const t of layout) occupiedMap.set(t.id, { occupied: false });
   try {
     const odb = getOrdersDb();
-    const rows = odb.prepare("SELECT id, table_id, status FROM orders WHERE table_id IS NOT NULL AND status != 'paid'").all() as Array<{ id:number; table_id:number; status:string }>;
+    const rows = odb.prepare("SELECT id, table_id, status FROM orders WHERE table_id IS NOT NULL AND status != 'paid'").all() as Array<{ id:number; table_id:string; status:string }>;
     for (const r of rows) {
       const key = String(r.table_id);
       if (occupiedMap.has(key)) occupiedMap.set(key, { occupied: true, orderId: r.id });
@@ -422,7 +422,7 @@ ipcMain.handle('get-restaurant-occupancy', async () => {
 ipcMain.handle('open-table', async (_e, payload: { tableId: string }) => {
   const odb = getOrdersDb();
   const info = odb.prepare('INSERT INTO orders (customer_id, phone_id, fulfillment, status, table_id) VALUES (?, ?, ?, ?, ?)')
-    .run(null, null, 'collection', 'pending', Number(payload.tableId));
+    .run(null, null, 'restaurant', 'pending', payload.tableId);
   const orderId = info.lastInsertRowid as number;
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'create', id: orderId }));
   return { orderId };
@@ -432,7 +432,7 @@ ipcMain.handle('close-table', async (_e, payload: { tableId: string; payment_met
   const odb = getOrdersDb();
   const pm = payload.payment_method ?? null;
   const info = odb.prepare("UPDATE orders SET status = 'paid', payment_method = COALESCE(?, payment_method) WHERE table_id = ? AND status != 'paid'")
-    .run(pm, Number(payload.tableId));
+    .run(pm, payload.tableId);
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'update', id: payload.tableId }));
   return { changes: info.changes };
 })

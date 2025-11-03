@@ -14,7 +14,7 @@ const OrderList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [details, setDetails] = useState<{
-    order: { id:number; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar'; created_at:string };
+    order: { id:number; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar' | 'restaurant'; created_at:string };
     customer: { id:number; name:string; phone:string; address:string } | null;
     items: Array<{ dish_id:number; name:string; quantity:number; price:number }>;
     subtotal: number;

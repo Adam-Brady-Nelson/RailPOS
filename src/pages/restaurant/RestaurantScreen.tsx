@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import StyleSwitcher from '../../components/StyleSwitcher';
 import BottomNav from '../../components/BottomNav';
 import '../OrderScreen.css';
@@ -28,19 +28,16 @@ export default function RestaurantScreen() {
   const onTableClick = useCallback(async (t: Table) => {
     const state = occ[t.id];
     if (!state?.occupied) {
-      // open table: create pending order
-      await window.db.openTable(t.id);
+      // open table: create pending order and navigate to order screen
+      const { orderId } = await window.db.openTable(t.id);
+      window.location.hash = `#/restaurant-order/${orderId}`;
     } else {
-      // close table: mark paid (no items in MVP); default no payment method
-      await window.db.closeTable(t.id);
+      // occupied: navigate to existing order for editing/payment
+      if (state.orderId != null) {
+        window.location.hash = `#/restaurant-order/${state.orderId}`;
+      }
     }
-    // refresh
-    try {
-      const rows = await window.db.getRestaurantOccupancy();
-      const map: Record<string, { occupied: boolean; orderId?: number }> = {};
-      for (const r of rows) map[r.table.id] = { occupied: r.occupied, orderId: r.orderId };
-      setOcc(map);
-    } catch (err) { console.warn('[RestaurantScreen] refresh occupancy failed', err); }
+    // Navigation will take over; no immediate occupancy refresh necessary
   }, [occ]);
 
   const tiles = useMemo(() => layout.map(t => {

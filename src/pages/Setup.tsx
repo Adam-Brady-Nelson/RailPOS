@@ -17,8 +17,7 @@ const Setup: React.FC = () => {
     setBusy(true);
     setError(null);
     try {
-  // Persist chosen styles first
-  // @ts-ignore optional in browser
+  // Persist chosen styles first (no-op in browser-only runs)
   await window.settings?.set?.({ enabledStyles: enabled, activeStyle: active });
       await window.db.initializeDb();
       setDbPresent(true);
@@ -50,7 +49,6 @@ const Setup: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        // @ts-ignore
         const s = await window.settings?.get?.();
         if (s) {
           setEnabled(s.enabledStyles ?? [(s.style as 'TAKEAWAY' | 'BAR' | 'RESTAURANT') ?? 'TAKEAWAY']);
@@ -71,7 +69,6 @@ const Setup: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        // @ts-ignore optional in browser
         await window.settings?.set?.({ enabledStyles: enabled, activeStyle: active });
       } catch { /* ignore */ }
     })();

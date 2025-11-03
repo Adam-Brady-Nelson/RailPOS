@@ -5,7 +5,7 @@ type OrderItem = { dish_id:number; name:string; quantity:number; price:number };
 type Customer = { id:number; name:string; phone:string; address:string };
 
 export interface OrderDetailsData {
-  order: { id:number; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar'; created_at:string };
+  order: { id:number; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar' | 'restaurant'; created_at:string };
   customer: Customer | null;
   items: OrderItem[];
   subtotal: number;
@@ -53,7 +53,12 @@ const OrderDetailsPanel: React.FC<Props> = ({ selectedId, details, loading, widt
               </div>
             )}
             <div className="order-details-panel__meta">
-              <div><strong>Fulfillment:</strong> {details.order.fulfillment === 'delivery' ? 'Delivery' : details.order.fulfillment === 'bar' ? 'Bar' : 'Collection'}</div>
+              <div><strong>Fulfillment:</strong> {
+                details.order.fulfillment === 'delivery' ? 'Delivery' :
+                details.order.fulfillment === 'bar' ? 'Bar' :
+                details.order.fulfillment === 'restaurant' ? 'Restaurant' :
+                'Collection'
+              }</div>
               <div><strong>Placed:</strong> {new Date(details.order.created_at).toLocaleString()}</div>
             </div>
             <div>

@@ -51,38 +51,28 @@ const AppRoutes: React.FC = () => {
 
   if (!style) return null;
 
-  const isBar = style === 'BAR';
-  const isRestaurant = style === 'RESTAURANT';
+  const HomeSwitch: React.FC<{ style: AppStyle }> = ({ style }) => {
+    if (style === 'BAR') return <BarOrderScreen />;
+    if (style === 'RESTAURANT') return <RestaurantScreen />;
+    return <MainScreen />;
+  };
 
   return (
     <Routes>
-      {isBar ? (
-        <>
-          <Route path="/" element={<BarOrderScreen />} />
-          <Route path="/setup" element={<Setup />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </>
-      ) : isRestaurant ? (
-        <>
-          <Route path="/" element={<RestaurantScreen />} />
-          <Route path="/setup" element={<Setup />} />
-          <Route path="/restaurant-layout" element={<RestaurantLayoutEditor />} />
-          <Route path="/restaurant-order/:orderId" element={<RestaurantOrderScreen />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </>
-      ) : (
-        <>
-          <Route path="/" element={<MainScreen />} />
-          <Route path="/customer-form/:phoneId" element={<CustomerForm />} />
-          <Route path="/order/:orderId" element={<OrderScreen />} />
-          <Route path="/order/new" element={<OrderScreen />} />
-          <Route path="/orders" element={<OrderList />} />
-          <Route path="/totals" element={<DailyTotals />} />
-          <Route path="/setup" element={<Setup />} />
-          <Route path="/restaurant-layout" element={<RestaurantLayoutEditor />} />
-          <Route path="/menu" element={<MenuManager />} />
-        </>
-      )}
+      <Route path="/" element={<HomeSwitch style={style} />} />
+      {/* Takeaway-specific pages (also useful in other modes) */}
+      <Route path="/customer-form/:phoneId" element={<CustomerForm />} />
+      <Route path="/order/:orderId" element={<OrderScreen />} />
+      <Route path="/order/new" element={<OrderScreen />} />
+      {/* Restaurant-specific order editing */}
+      <Route path="/restaurant-order/:orderId" element={<RestaurantOrderScreen />} />
+      {/* Shared utility views */}
+      <Route path="/orders" element={<OrderList />} />
+      <Route path="/totals" element={<DailyTotals />} />
+      <Route path="/setup" element={<Setup />} />
+      <Route path="/restaurant-layout" element={<RestaurantLayoutEditor />} />
+      <Route path="/menu" element={<MenuManager />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

@@ -113,7 +113,13 @@ const OrderList: React.FC = () => {
         details={details}
         loading={loadingDetails}
         width={ASIDE_WIDTH}
-        onEdit={selectedId ? () => navigate(`/order/${selectedId}`) : undefined}
+        onEdit={selectedId && details ? (
+          details.order.fulfillment === 'restaurant'
+            ? () => navigate(`/restaurant-order/${selectedId}`)
+            : (details.order.fulfillment === 'delivery' || details.order.fulfillment === 'collection')
+              ? () => navigate(`/order/${selectedId}`)
+              : undefined
+        ) : undefined}
       />
     </div>
   );

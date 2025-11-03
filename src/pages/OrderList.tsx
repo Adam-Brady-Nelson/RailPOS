@@ -14,7 +14,7 @@ const OrderList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [details, setDetails] = useState<{
-    order: { id:number; status:string; phone_id:number; fulfillment: 'delivery' | 'collection'; created_at:string };
+    order: { id:number; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar'; created_at:string };
     customer: { id:number; name:string; phone:string; address:string } | null;
     items: Array<{ dish_id:number; name:string; quantity:number; price:number }>;
     subtotal: number;
@@ -26,7 +26,19 @@ const OrderList: React.FC = () => {
       try {
         setLoading(true);
         const rows = await window.db.getOrdersToday();
-        setOrders(rows);
+        // Ensure newest-first ordering by time even if backend changes
+        const sorted = rows.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        // Compute display numbers per fulfillment for the day (ascending by time)
+        const asc = sorted.slice().reverse();
+        const counters = new Map<string, number>();
+        const displayNo = new Map<number, number>();
+        for (const o of asc) {
+          const key = o.fulfillment;
+          const next = (counters.get(key) ?? 0) + 1;
+          counters.set(key, next);
+          displayNo.set(o.id, next);
+        }
+        setOrders(sorted.map(o => ({ ...o, display_no: displayNo.get(o.id) })));
       } catch (e: unknown) {
         console.error(e);
         const msg = e instanceof Error ? e.message : '';
@@ -44,7 +56,17 @@ const OrderList: React.FC = () => {
       if (entity === 'order') {
         try {
           const rows = await window.db.getOrdersToday();
-          setOrders(rows);
+          const sorted = rows.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          const asc = sorted.slice().reverse();
+          const counters = new Map<string, number>();
+          const displayNo = new Map<number, number>();
+          for (const o of asc) {
+            const key = o.fulfillment;
+            const next = (counters.get(key) ?? 0) + 1;
+            counters.set(key, next);
+            displayNo.set(o.id, next);
+          }
+          setOrders(sorted.map(o => ({ ...o, display_no: displayNo.get(o.id) })));
           if (selectedId != null && Number(id) === selectedId) {
             const d = await window.db.getOrderDetails(selectedId);
             setDetails(d);

@@ -78,7 +78,7 @@ export function startNewShift(): ShiftInfo {
       customer_id INTEGER,
       phone_id INTEGER,
       status TEXT NOT NULL DEFAULT 'pending',
-      fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection')) DEFAULT 'collection',
+      fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection','bar')) DEFAULT 'collection',
       payment_method TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -115,6 +115,41 @@ export function getOrdersDb(): BetterSqlite3Database {
     }
     if (!hasFulfillment) {
       ordersDb.exec("ALTER TABLE orders ADD COLUMN fulfillment TEXT NOT NULL DEFAULT 'collection'");
+    }
+    // If fulfillment exists but CHECK does not include 'bar', migrate table to relax constraint
+    try {
+      const row = ordersDb.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='orders'").get() as { sql?: string } | undefined;
+      const createSql = row?.sql ?? '';
+      if (createSql.includes("CHECK (fulfillment IN ('delivery','collection'))") && !createSql.includes("'bar'")) {
+        ordersDb.exec('PRAGMA foreign_keys=off;');
+        ordersDb.exec('BEGIN TRANSACTION;');
+        ordersDb.exec(`
+          CREATE TABLE orders_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER,
+            phone_id INTEGER,
+            status TEXT NOT NULL DEFAULT 'pending',
+            fulfillment TEXT NOT NULL CHECK (fulfillment IN ('delivery','collection','bar')) DEFAULT 'collection',
+            payment_method TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            table_id INTEGER
+          );
+        `);
+        // Copy data across; columns may or may not include table_id
+        const existingCols = ordersDb.prepare("PRAGMA table_info('orders')").all() as Array<{ name: string }>;
+        const hasOldTableId = existingCols.some(c => c.name === 'table_id');
+        if (hasOldTableId) {
+          ordersDb.exec("INSERT INTO orders_new (id, customer_id, phone_id, status, fulfillment, payment_method, created_at, table_id) SELECT id, customer_id, phone_id, status, fulfillment, payment_method, created_at, table_id FROM orders;");
+        } else {
+          ordersDb.exec("INSERT INTO orders_new (id, customer_id, phone_id, status, fulfillment, payment_method, created_at) SELECT id, customer_id, phone_id, status, fulfillment, payment_method, created_at FROM orders;");
+        }
+        ordersDb.exec('DROP TABLE orders;');
+        ordersDb.exec('ALTER TABLE orders_new RENAME TO orders;');
+        ordersDb.exec('COMMIT;');
+        ordersDb.exec('PRAGMA foreign_keys=on;');
+      }
+    } catch (merr) {
+      console.warn('[DB] Could not migrate orders table to include bar fulfillment:', merr);
     }
     if (!hasTableId) {
       ordersDb.exec("ALTER TABLE orders ADD COLUMN table_id INTEGER");

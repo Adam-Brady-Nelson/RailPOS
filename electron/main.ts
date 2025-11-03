@@ -124,7 +124,7 @@ ipcMain.handle('get-orders-today', async () => {
     WHERE date(o.created_at, 'localtime') = date('now', 'localtime')
     GROUP BY o.id
     ORDER BY o.created_at DESC
-  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | null; customer_id:number|null; total:number }>
+  `).all() as Array<{ id:number; created_at:string; status:string; phone_id:number; fulfillment: 'delivery' | 'collection' | 'bar' | null; customer_id:number|null; total:number }>
 
   const ids = Array.from(new Set(orders.map(o => o.customer_id).filter((v): v is number => typeof v === 'number')))
   const customersById = new Map<number, { id:number; name:string; phone:string }>()
@@ -139,7 +139,7 @@ ipcMain.handle('get-orders-today', async () => {
     created_at: o.created_at,
     status: o.status,
     phone_id: o.phone_id,
-    fulfillment: (o.fulfillment ?? 'collection') as 'delivery' | 'collection',
+  fulfillment: (o.fulfillment ?? 'collection') as 'delivery' | 'collection' | 'bar',
     customer_name: o.customer_id != null ? customersById.get(o.customer_id)?.name : undefined,
     customer_phone: o.customer_id != null ? customersById.get(o.customer_id)?.phone : undefined,
     total: o.total,
@@ -382,7 +382,7 @@ ipcMain.handle('set-settings', async (_e, partial: Partial<{ style: 'TAKEAWAY' |
 ipcMain.handle('quick-sale', async (_e, payload: { items: Array<{ dish_id: number; quantity: number; price: number }>; payment_method: 'cash' | 'card' }) => {
   const odb = getOrdersDb();
   const orderInfo = odb.prepare('INSERT INTO orders (customer_id, phone_id, fulfillment, payment_method, status) VALUES (?, ?, ?, ?, ?)')
-    .run(null, null, 'collection', payload.payment_method, 'paid');
+    .run(null, null, 'bar', payload.payment_method, 'paid');
   const orderId = orderInfo.lastInsertRowid as number;
   if (payload.items && payload.items.length > 0) {
     const stmt = odb.prepare('INSERT INTO order_items (order_id, dish_id, quantity, price) VALUES (?, ?, ?, ?)');

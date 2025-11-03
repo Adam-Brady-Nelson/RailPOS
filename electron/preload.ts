@@ -14,11 +14,11 @@ declare global {
       createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => Promise<{ customerId: number, orderId: number }>
   createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => Promise<{ customerId: number }>
   createOrderWithItems: (payload: { customerId: number; phoneId: number; fulfillment?: 'delivery' | 'collection'; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => Promise<{ orderId: number }>
-  getOrdersToday: () => Promise<Array<{ id: number; created_at: string; status: string; phone_id: number; fulfillment: 'delivery' | 'collection'; customer_name?: string; customer_phone?: string; total: number }>>
+  getOrdersToday: () => Promise<Array<{ id: number; created_at: string; status: string; phone_id: number; fulfillment: 'delivery' | 'collection' | 'bar'; customer_name?: string; customer_phone?: string; total: number }>>
       getDailyTotals: () => Promise<{ total: number; orders: number }>
       getRevenueBreakdownToday: () => Promise<{ cash: number; card: number; total: number }>
       getOrderDetails: (orderId: number) => Promise<{
-        order: { id:number; status:string; phone_id:number; payment_method: string | null; fulfillment: 'delivery' | 'collection'; created_at:string },
+  order: { id:number; status:string; phone_id:number; payment_method: string | null; fulfillment: 'delivery' | 'collection' | 'bar'; created_at:string },
         customer: { id:number; name:string; phone:string; address:string } | null,
         items: Array<{ dish_id:number; name:string; quantity:number; price:number }>,
         subtotal: number
@@ -58,7 +58,7 @@ contextBridge.exposeInMainWorld('db', {
   deleteDish: (id: number) => ipcRenderer.invoke('delete-dish', id),
   createCustomerAndOrder: (payload: { customer: { name: string; phone: string; address: string }, phoneId: number }) => ipcRenderer.invoke('create-customer-and-order', payload),
   createOrUpdateCustomer: (customer: { name: string; phone: string; address: string }) => ipcRenderer.invoke('create-or-update-customer', customer),
-  createOrderWithItems: (payload: { customerId: number; phoneId: number; fulfillment?: 'delivery' | 'collection'; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => ipcRenderer.invoke('create-order-with-items', payload),
+  createOrderWithItems: (payload: { customerId: number; phoneId: number; fulfillment?: 'delivery' | 'collection' | 'bar'; items: Array<{ dish_id: number; quantity: number; price: number }>, payment_method?: 'cash' | 'card' }) => ipcRenderer.invoke('create-order-with-items', payload),
   getOrdersToday: () => ipcRenderer.invoke('get-orders-today'),
   getDailyTotals: () => ipcRenderer.invoke('get-daily-totals'),
   getRevenueBreakdownToday: () => ipcRenderer.invoke('get-revenue-breakdown-today'),

@@ -34,11 +34,15 @@ declare global {
       initializeDb: () => Promise<boolean>
       onDataChanged: (handler: (event: { entity: string; action: string; id: number | string; category_id?: number }) => void) => () => void
       quickSale: (items: Array<{ dish_id: number; quantity: number; price: number }>, method: 'cash' | 'card') => Promise<{ orderId: number }>
+      // Restaurant
+      getRestaurantOccupancy: () => Promise<Array<{ table: { id:string; name:string; x:number; y:number; w:number; h:number }; occupied: boolean; orderId?: number }>>
+      openTable: (tableId: string) => Promise<{ orderId: number }>
+      closeTable: (tableId: string, payment_method?: 'cash' | 'card') => Promise<{ changes: number }>
     }
     settings: {
-      get: () => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>
-      set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>) => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>
-      onChanged: (handler: (settings: { enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }) => void) => () => void
+      get: () => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }>
+      set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }>) => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }>
+      onChanged: (handler: (settings: { enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }) => void) => () => void
     }
   }
 }
@@ -74,13 +78,17 @@ contextBridge.exposeInMainWorld('db', {
     return () => ipcRenderer.removeListener('data-changed', listener)
   },
   quickSale: (items: Array<{ dish_id: number; quantity: number; price: number }>, method: 'cash' | 'card') => ipcRenderer.invoke('quick-sale', { items, payment_method: method }),
+  // Restaurant
+  getRestaurantOccupancy: () => ipcRenderer.invoke('get-restaurant-occupancy'),
+  openTable: (tableId: string) => ipcRenderer.invoke('open-table', { tableId }),
+  closeTable: (tableId: string, payment_method?: 'cash' | 'card') => ipcRenderer.invoke('close-table', { tableId, payment_method }),
 })
 
 contextBridge.exposeInMainWorld('settings', {
   get: () => ipcRenderer.invoke('get-settings'),
-  set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>) => ipcRenderer.invoke('set-settings', partial),
-  onChanged: (handler: (settings: { enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }) => void) => {
-    const listener = (_: unknown, payload: unknown) => handler(payload as { enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' })
+  set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }>) => ipcRenderer.invoke('set-settings', partial),
+  onChanged: (handler: (settings: { enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }) => void) => {
+    const listener = (_: unknown, payload: unknown) => handler(payload as { enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> })
     ipcRenderer.on('settings-changed', listener)
     return () => ipcRenderer.removeListener('settings-changed', listener)
   },

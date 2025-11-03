@@ -25,8 +25,8 @@ const btnActive: React.CSSProperties = {
 
 export default function StyleSwitcher() {
   const navigate = useNavigate();
-  const [enabled, setEnabled] = useState<Array<'TAKEAWAY' | 'BAR'>>([]);
-  const [active, setActive] = useState<'TAKEAWAY' | 'BAR'>('TAKEAWAY');
+  const [enabled, setEnabled] = useState<Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>>([]);
+  const [active, setActive] = useState<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>('TAKEAWAY');
 
   useEffect(() => {
     let off = () => {};
@@ -44,7 +44,7 @@ export default function StyleSwitcher() {
     return () => off();
   }, []);
 
-  const change = async (next: 'TAKEAWAY' | 'BAR') => {
+  const change = async (next: 'TAKEAWAY' | 'BAR' | 'RESTAURANT') => {
     if (next === active) return;
     await window.settings.set({ activeStyle: next });
     navigate('/', { replace: true });
@@ -70,6 +70,15 @@ export default function StyleSwitcher() {
           title="Switch to Bar"
         >
           Bar
+        </button>
+      )}
+      {enabled.includes('RESTAURANT') && (
+        <button
+          style={active === 'RESTAURANT' ? btnActive : btn}
+          onClick={() => change('RESTAURANT')}
+          title="Switch to Restaurant"
+        >
+          Restaurant
         </button>
       )}
     </div>

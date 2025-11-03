@@ -1,0 +1,55 @@
+.restaurant-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.restaurant-header__right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.restaurant-canvas {
+  position: relative;
+  width: 1000px;
+  height: 600px;
+  border: 1px dashed #cbd5e1;
+  margin: 12px;
+  background: #f8fafc;
+}
+
+.restaurant-table {
+  position: absolute;
+  border: 2px solid #111827;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  cursor: pointer;
+}
+
+.restaurant-table--occupied {
+  background: #fca5a5; /* occupied: red-ish */
+}
+
+.restaurant-table--free {
+  background: #a7f3d0; /* free: green-ish */
+}
+
+.restaurant-table__content {
+  text-align: center;
+  padding: 4px;
+}
+
+.restaurant-table__status {
+  font-size: 12px;
+}
+
+.restaurant-hint {
+  margin: 0 12px 12px;
+  color: #64748b;
+  font-size: 12px;
+}

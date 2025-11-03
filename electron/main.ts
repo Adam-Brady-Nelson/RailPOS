@@ -12,6 +12,15 @@ ipcMain.handle('close-shift', async () => {
   return true;
 })
 
+// Workarounds for some Linux GLib/GObject/Wayland quirks that can crash Electron
+// (harmless on other platforms)
+try {
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch('ozone-platform-hint', 'x11');
+} catch {
+  // best effort, ignore if not supported
+}
+
 // In CJS output, Node provides __dirname automatically; tsup CJS transpile will retain it.
 
 const isDev = process.env.VITE_DEV_SERVER === 'true'
@@ -384,4 +393,46 @@ ipcMain.handle('quick-sale', async (_e, payload: { items: Array<{ dish_id: numbe
   }
   BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'create', id: orderId }));
   return { orderId };
+})
+
+// Restaurant: occupancy and basic open/close table actions
+ipcMain.handle('get-restaurant-occupancy', async () => {
+  const settings = readSettings();
+  const layout = settings.restaurantLayout ?? [];
+  const occupiedMap = new Map<string, { occupied: boolean; orderId?: number }>();
+  for (const t of layout) occupiedMap.set(t.id, { occupied: false });
+  try {
+    const odb = getOrdersDb();
+    const rows = odb.prepare("SELECT id, table_id, status FROM orders WHERE table_id IS NOT NULL AND status != 'paid'").all() as Array<{ id:number; table_id:number; status:string }>;
+    for (const r of rows) {
+      const key = String(r.table_id);
+      if (occupiedMap.has(key)) occupiedMap.set(key, { occupied: true, orderId: r.id });
+    }
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes('NO_ACTIVE_SHIFT')) {
+      // Gracefully report all tables as free when no shift is active.
+    } else {
+      console.warn('[Restaurant] occupancy query failed', e);
+    }
+  }
+  return layout.map(t => ({ table: t, ...occupiedMap.get(t.id)! }));
+})
+
+ipcMain.handle('open-table', async (_e, payload: { tableId: string }) => {
+  const odb = getOrdersDb();
+  const info = odb.prepare('INSERT INTO orders (customer_id, phone_id, fulfillment, status, table_id) VALUES (?, ?, ?, ?, ?)')
+    .run(null, null, 'collection', 'pending', Number(payload.tableId));
+  const orderId = info.lastInsertRowid as number;
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'create', id: orderId }));
+  return { orderId };
+})
+
+ipcMain.handle('close-table', async (_e, payload: { tableId: string; payment_method?: 'cash' | 'card' }) => {
+  const odb = getOrdersDb();
+  const pm = payload.payment_method ?? null;
+  const info = odb.prepare("UPDATE orders SET status = 'paid', payment_method = COALESCE(?, payment_method) WHERE table_id = ? AND status != 'paid'")
+    .run(pm, Number(payload.tableId));
+  BrowserWindow.getAllWindows().forEach(w => w.webContents.send('data-changed', { entity: 'order', action: 'update', id: payload.tableId }));
+  return { changes: info.changes };
 })

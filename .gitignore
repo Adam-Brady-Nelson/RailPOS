@@ -56,3 +56,4 @@ coverage/
 ### Misc
 *.sqlite
 *.sqlite3
+settings.json

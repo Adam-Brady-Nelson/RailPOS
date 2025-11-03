@@ -54,9 +54,11 @@ Editing rules for agents
 Questions / gaps
 - If stricter typings for `window.db` are desired, propose an interface in `preload.ts` and propagate to components
 
-Styles (TAKEAWAY vs BAR)
-- Persisted style in `electron/settings.ts`; IPC: `get-settings`/`set-settings`; renderer via `window.settings.get|set|onChanged`.
-- Router switches routes based on style in `src/App.tsx`:
+Styles (TAKEAWAY vs BAR vs RESTAURANT)
+- Persisted styles in `electron/settings.ts` with multi-style support: `enabledStyles[]` and `activeStyle`; IPC: `get-settings`/`set-settings`; renderer via `window.settings.get|set|onChanged`.
+- Router switches routes based on `activeStyle` in `src/App.tsx`:
   - TAKEAWAY: current flow (MainScreen, CustomerForm → OrderScreen, Orders, Totals).
   - BAR: single-screen POS at `/` → `src/pages/bar/BarOrderScreen.tsx` with quick-sale (`window.db.quickSale`).
-- Bar screen reuses existing `OrderScreen.css`, `OrderSummaryPanel`, `ItemsGrid`, `CategoriesNavBar`, and checkout button styles.
+  - RESTAURANT: table grid at `/` → `src/pages/restaurant/RestaurantScreen.tsx`; layout editor at `/restaurant-layout`.
+- Style switching available in-app via `src/components/StyleSwitcher.tsx`.
+- Restaurant layout is stored in settings (`restaurantLayout[]`), edited via drag-and-drop in `RestaurantLayoutEditor`, and occupancy derives from shift orders with `orders.table_id`.

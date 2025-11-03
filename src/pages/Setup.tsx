@@ -8,8 +8,8 @@ const Setup: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [dbPresent, setDbPresent] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [enabled, setEnabled] = useState<Array<'TAKEAWAY' | 'BAR'>>(['TAKEAWAY']);
-  const [active, setActive] = useState<'TAKEAWAY' | 'BAR'>('TAKEAWAY');
+  const [enabled, setEnabled] = useState<Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>>(['TAKEAWAY']);
+  const [active, setActive] = useState<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>('TAKEAWAY');
 
   const handleInitialize = useCallback(async () => {
     setBusy(true);
@@ -47,12 +47,29 @@ const Setup: React.FC = () => {
         // @ts-ignore
         const s = await window.settings?.get?.();
         if (s) {
-          setEnabled(s.enabledStyles ?? [(s.style as 'TAKEAWAY' | 'BAR') ?? 'TAKEAWAY']);
-          setActive(s.activeStyle ?? (s.style as 'TAKEAWAY' | 'BAR') ?? 'TAKEAWAY');
+          setEnabled(s.enabledStyles ?? [(s.style as 'TAKEAWAY' | 'BAR' | 'RESTAURANT') ?? 'TAKEAWAY']);
+          setActive(s.activeStyle ?? (s.style as 'TAKEAWAY' | 'BAR' | 'RESTAURANT') ?? 'TAKEAWAY');
         }
       } catch { /* ignore */ }
     })();
   }, []);
+
+  // Keep active selection valid when enabled list changes
+  useEffect(() => {
+    if (!enabled.includes(active)) {
+      setActive(enabled[0] ?? 'TAKEAWAY');
+    }
+  }, [enabled, active]);
+
+  // Persist settings live when toggles change (no need to re-initialize DB)
+  useEffect(() => {
+    (async () => {
+      try {
+        // @ts-ignore optional in browser
+        await window.settings?.set?.({ enabledStyles: enabled, activeStyle: active });
+      } catch { /* ignore */ }
+    })();
+  }, [enabled, active]);
 
   return (
   <div className="setup-container">
@@ -83,16 +100,27 @@ const Setup: React.FC = () => {
           />{' '}
           Bar (Single Screen, Quick Sale)
         </label>
+        <label style={{ display: 'block', marginTop: 6 }}>
+          <input
+            type="checkbox"
+            checked={enabled.includes('RESTAURANT')}
+            onChange={(e) => {
+              setEnabled(prev => e.target.checked ? Array.from(new Set([...prev, 'RESTAURANT'])) : prev.filter(s => s !== 'RESTAURANT'))
+            }}
+          />{' '}
+          Restaurant (Table grid + Layout editor)
+        </label>
       </div>
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontWeight: 600, marginBottom: 8 }}>Default Active System</div>
         <select
           value={active}
-          onChange={(e) => setActive(e.target.value as 'TAKEAWAY' | 'BAR')}
+          onChange={(e) => setActive(e.target.value as 'TAKEAWAY' | 'BAR' | 'RESTAURANT')}
           disabled={enabled.length === 0}
         >
           {enabled.includes('TAKEAWAY') && <option value="TAKEAWAY">Takeaway</option>}
           {enabled.includes('BAR') && <option value="BAR">Bar</option>}
+          {enabled.includes('RESTAURANT') && <option value="RESTAURANT">Restaurant</option>}
         </select>
       </div>
       <button onClick={handleInitialize} className="setup-link" disabled={busy}>
@@ -103,6 +131,11 @@ const Setup: React.FC = () => {
         <Link to={dbPresent ? "/menu" : "#"} className="setup-link" onClick={(e) => { if (!dbPresent) e.preventDefault(); }} style={!dbPresent ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
           Manage Menu (Categories & Items)
         </Link>
+        {enabled.includes('RESTAURANT') && (
+          <Link to={"/restaurant-layout"} className="setup-link">
+            Restaurant Layout
+          </Link>
+        )}
         <div className="setup-desc">This is a placeholder for setup/configuration options.</div>
       </div>
     </div>

@@ -2,7 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import { app } from 'electron';
 
-export type AppStyle = 'TAKEAWAY' | 'BAR';
+export type AppStyle = 'TAKEAWAY' | 'BAR' | 'RESTAURANT';
+
+export type RestaurantTable = {
+  id: string;
+  name: string;
+  x: number; // px within canvas
+  y: number; // px within canvas
+  w: number; // px
+  h: number; // px
+};
 
 export type AppSettings = {
   // Legacy single style (kept for backward-compat reads)
@@ -10,6 +19,8 @@ export type AppSettings = {
   // New multi-style model
   enabledStyles: AppStyle[];
   activeStyle: AppStyle;
+  // Restaurant layout (optional)
+  restaurantLayout?: RestaurantTable[];
   createdAt: string;
   updatedAt: string;
 };
@@ -18,13 +29,16 @@ const defaultSettings: AppSettings = {
   style: 'TAKEAWAY',
   enabledStyles: ['TAKEAWAY'],
   activeStyle: 'TAKEAWAY',
+  restaurantLayout: [],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
 
 function getSettingsPath() {
-  const dir = app.getPath('userData');
-  return path.join(dir, 'settings.json');
+  // In dev (Vite-driven Electron), prefer writing to the project cwd so files are visible in the repo folder.
+  const isDev = process.env.VITE_DEV_SERVER === 'true' || !app.isPackaged || process.env.NODE_ENV === 'development';
+  const baseDir = isDev ? process.cwd() : app.getPath('userData');
+  return path.join(baseDir, 'settings.json');
 }
 
 export function readSettings(): AppSettings {
@@ -40,9 +54,9 @@ export function readSettings(): AppSettings {
     if (!merged.activeStyle) {
       merged.activeStyle = merged.style ?? merged.enabledStyles[0] ?? 'TAKEAWAY';
     }
-    // Ensure active is in enabled
+    // Ensure active is valid: if active not enabled, pick first enabled instead of mutating enabled set
     if (!merged.enabledStyles.includes(merged.activeStyle)) {
-      merged.enabledStyles = Array.from(new Set([...merged.enabledStyles, merged.activeStyle]));
+      merged.activeStyle = merged.enabledStyles[0] ?? 'TAKEAWAY';
     }
     return merged;
   } catch {
@@ -67,13 +81,25 @@ export function writeSettings(partial: Partial<AppSettings>): AppSettings {
   if (partial.activeStyle) {
     next.activeStyle = partial.activeStyle;
   }
-  // Ensure active in enabled
+  // Restaurant layout persistence
+  if (partial.restaurantLayout) {
+    // Shallow-validate shape and store
+    try {
+      next.restaurantLayout = partial.restaurantLayout.map(t => ({ id: String(t.id), name: String(t.name), x: Number(t.x), y: Number(t.y), w: Number(t.w), h: Number(t.h) }));
+    } catch {
+      // If mapping fails, keep existing layout
+    }
+  }
+  // Ensure active is valid: if not enabled, switch to first enabled rather than altering enabled set
   if (!next.enabledStyles.includes(next.activeStyle)) {
-    next.enabledStyles = Array.from(new Set([...next.enabledStyles, next.activeStyle]));
+    next.activeStyle = next.enabledStyles[0] ?? 'TAKEAWAY';
   }
   const merged: AppSettings = { ...next, updatedAt: new Date().toISOString() };
   const p = getSettingsPath();
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, JSON.stringify(merged, null, 2), 'utf8');
+  try {
+    console.log('[Settings] Saved to', p, 'enabledStyles=', merged.enabledStyles, 'activeStyle=', merged.activeStyle, 'layout=', (merged.restaurantLayout?.length ?? 0));
+  } catch { /* ignore logging errors */ }
   return merged;
 }

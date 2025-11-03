@@ -8,8 +8,10 @@ import DailyTotals from './pages/DailyTotals';
 import Setup from './pages/Setup';
 import MenuManager from './pages/MenuManager';
 import BarOrderScreen from './pages/bar/BarOrderScreen';
+import RestaurantScreen from './pages/restaurant/RestaurantScreen';
+import RestaurantLayoutEditor from './pages/restaurant/RestaurantLayoutEditor';
 
-type AppStyle = 'TAKEAWAY' | 'BAR';
+type AppStyle = 'TAKEAWAY' | 'BAR' | 'RESTAURANT';
 
 const AppRoutes: React.FC = () => {
   const navigate = useNavigate();
@@ -51,6 +53,7 @@ const AppRoutes: React.FC = () => {
   if (!style) return null;
 
   const isBar = style === 'BAR';
+  const isRestaurant = style === 'RESTAURANT';
 
   return (
     <Routes>
@@ -58,6 +61,13 @@ const AppRoutes: React.FC = () => {
         <>
           <Route path="/" element={<BarOrderScreen />} />
           <Route path="/setup" element={<Setup />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </>
+      ) : isRestaurant ? (
+        <>
+          <Route path="/" element={<RestaurantScreen />} />
+          <Route path="/setup" element={<Setup />} />
+          <Route path="/restaurant-layout" element={<RestaurantLayoutEditor />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
       ) : (
@@ -69,6 +79,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/orders" element={<OrderList />} />
           <Route path="/totals" element={<DailyTotals />} />
           <Route path="/setup" element={<Setup />} />
+          <Route path="/restaurant-layout" element={<RestaurantLayoutEditor />} />
           <Route path="/menu" element={<MenuManager />} />
         </>
       )}

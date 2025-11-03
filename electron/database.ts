@@ -109,11 +109,15 @@ export function getOrdersDb(): BetterSqlite3Database {
     const cols = ordersDb.prepare("PRAGMA table_info('orders')").all() as Array<{ name: string }>
     const hasPaymentMethod = cols.some(c => c.name === 'payment_method');
     const hasFulfillment = cols.some(c => c.name === 'fulfillment');
+    const hasTableId = cols.some(c => c.name === 'table_id');
     if (!hasPaymentMethod) {
       ordersDb.exec("ALTER TABLE orders ADD COLUMN payment_method TEXT");
     }
     if (!hasFulfillment) {
       ordersDb.exec("ALTER TABLE orders ADD COLUMN fulfillment TEXT NOT NULL DEFAULT 'collection'");
+    }
+    if (!hasTableId) {
+      ordersDb.exec("ALTER TABLE orders ADD COLUMN table_id INTEGER");
     }
   } catch (e) {
     console.warn('[DB] Orders schema migration check failed:', e);

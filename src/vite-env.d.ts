@@ -8,9 +8,9 @@ declare global {
       ping: () => string
     }
     settings: {
-      get: () => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>
-      set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>) => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }>
-      onChanged: (cb: (s: { enabledStyles: Array<'TAKEAWAY' | 'BAR'>; activeStyle: 'TAKEAWAY' | 'BAR'; style?: 'TAKEAWAY' | 'BAR' }) => void) => () => void
+      get: () => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }>
+      set: (partial: Partial<{ enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }>) => Promise<{ enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }>
+      onChanged: (cb: (s: { enabledStyles: Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>; activeStyle: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; style?: 'TAKEAWAY' | 'BAR' | 'RESTAURANT'; restaurantLayout?: Array<{ id:string; name:string; x:number; y:number; w:number; h:number }> }) => void) => () => void
     }
   }
 }

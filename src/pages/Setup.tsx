@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
+import ShiftControls from '../components/ShiftControls';
 import './Setup.css';
 
 const Setup: React.FC = () => {
@@ -10,6 +11,7 @@ const Setup: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [enabled, setEnabled] = useState<Array<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>>(['TAKEAWAY']);
   const [active, setActive] = useState<'TAKEAWAY' | 'BAR' | 'RESTAURANT'>('TAKEAWAY');
+  const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
 
   const handleInitialize = useCallback(async () => {
     setBusy(true);
@@ -38,6 +40,10 @@ const Setup: React.FC = () => {
       } catch {
         setDbPresent(false);
       }
+      try {
+        const current = await window.db.getCurrentShift();
+        setShift(current);
+      } catch { /* ignore */ }
     })();
   }, []);
 
@@ -77,6 +83,10 @@ const Setup: React.FC = () => {
         <BackButton to="/">← Back</BackButton>
       </div>
       <h1 className="setup-title">Setup</h1>
+      {/* Global Shift Controls moved here */}
+      <div style={{ margin: '8px 0 16px' }}>
+        <ShiftControls shift={shift} onShiftChange={setShift} />
+      </div>
       <p style={{ marginTop: 8, marginBottom: 16 }}>Looks like this is your first time. Initialize the database to get started.</p>
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontWeight: 600, marginBottom: 8 }}>Enable POS Systems</div>

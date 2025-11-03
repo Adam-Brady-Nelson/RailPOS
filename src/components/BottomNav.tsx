@@ -2,9 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './BottomNav.css';
 
-const BottomNav: React.FC = () => {
+type Props = {
+  // Reserve space on the right (px), e.g., for a fixed sidebar/aside so the Setup button isn't obscured
+  rightOffset?: number;
+};
+
+const BottomNav: React.FC<Props> = ({ rightOffset = 0 }) => {
   return (
-    <div className="bottom-nav">
+    <div className="bottom-nav" style={rightOffset ? { paddingRight: 16 + rightOffset } : undefined}>
       <div className="bottom-nav__inner">
         <div className="bottom-nav__left">
           <Link to="/orders" className="bottom-nav__link">Order List</Link>

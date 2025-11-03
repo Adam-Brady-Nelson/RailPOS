@@ -1,19 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import ShiftControls from '../../components/ShiftControls';
 import StyleSwitcher from '../../components/StyleSwitcher';
+import BottomNav from '../../components/BottomNav';
 import '../OrderScreen.css';
 import './RestaurantScreen.css';
 
 type Table = { id: string; name: string; x: number; y: number; w: number; h: number };
 
 export default function RestaurantScreen() {
-  const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
   const [layout, setLayout] = useState<Table[]>([]);
   const [occ, setOcc] = useState<Record<string, { occupied: boolean; orderId?: number }>>({});
 
   useEffect(() => {
     (async () => {
-      try { setShift(await window.db.getCurrentShift()); } catch (err) { console.warn('[RestaurantScreen] getCurrentShift failed', err); }
       try {
         const s = await window.settings.get();
         setLayout(s.restaurantLayout ?? []);
@@ -69,7 +67,6 @@ export default function RestaurantScreen() {
         <h1 className="order-screen__title">Restaurant</h1>
         <div className="restaurant-header__right">
           <StyleSwitcher />
-          <ShiftControls shift={shift} onShiftChange={setShift} />
         </div>
       </div>
 
@@ -77,6 +74,7 @@ export default function RestaurantScreen() {
         {tiles}
       </div>
       <div className="restaurant-hint">Click a free table to open it; click an occupied table to close it.</div>
+      <BottomNav />
     </div>
   );
 }

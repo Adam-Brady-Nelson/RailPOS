@@ -7,7 +7,7 @@
   background: #ffffff;
   border-top: 1px solid #e5e7eb;
   padding: 12px 16px;
-  z-index: 50;
+  z-index: 1000; /* above main content; still under floating pay buttons (1100) */
   box-sizing: border-box;
   overflow-x: hidden;
 }

@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import CategoriesNavBar from '../../components/CategoriesNavBar';
 import ItemsGrid from '../../components/ItemsGrid';
 import OrderSummaryPanel from '../../components/OrderSummaryPanel';
-import ShiftControls from '../../components/ShiftControls';
 import { useConfirm } from '../../components/ConfirmProvider';
 import StyleSwitcher from '../../components/StyleSwitcher';
 import '../OrderScreen.css';
 import '../../components/CheckoutControls.css';
+import BottomNav from '../../components/BottomNav';
 
 // Keep parity with existing OrderScreen layout constants
 const BOTTOM_BAR_HEIGHT = 96; // px
@@ -21,7 +21,7 @@ type CartItem = { id: number; name: string; price: number; qty: number };
 
 const BarOrderScreen: React.FC = () => {
   const confirm = useConfirm();
-  const [shift, setShift] = useState<{ path: string; date: string } | null>(null);
+  // No inline shift controls; manage shift from Setup only
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -85,12 +85,7 @@ const BarOrderScreen: React.FC = () => {
   }, []);
 
   // Initial load + shift state
-  useEffect(() => {
-    loadCategories();
-    (async () => {
-      try { setShift(await window.db.getCurrentShift()); } catch { /* ignore */ }
-    })();
-  }, [loadCategories]);
+  useEffect(() => { loadCategories(); }, [loadCategories]);
 
   // Update dishes when category changes
   useEffect(() => { if (selectedCategory != null) loadDishes(selectedCategory); }, [selectedCategory, loadDishes]);
@@ -137,7 +132,6 @@ const BarOrderScreen: React.FC = () => {
         <h1 className="order-screen__title">Bar POS</h1>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
           <StyleSwitcher />
-          <ShiftControls shift={shift} onShiftChange={setShift} />
         </div>
       </div>
 
@@ -182,6 +176,9 @@ const BarOrderScreen: React.FC = () => {
         height={CATEGORIES_HEIGHT}
         bottomOffset={BOTTOM_BAR_HEIGHT + GAP_ABOVE_CHECKOUT}
       />
+
+      {/* Bottom navigation - offset for the right aside so Setup isn’t obscured */}
+      <BottomNav rightOffset={ASIDE_WIDTH + 24} />
     </div>
   );
 };

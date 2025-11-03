@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useConfirm } from '../components/ConfirmProvider';
 import BottomNav from '../components/BottomNav';
-import ShiftControls from '../components/ShiftControls';
 import StyleSwitcher from '../components/StyleSwitcher';
 import PhoneTile from '../components/PhoneTile';
 import './MainScreen.css';
@@ -40,7 +39,7 @@ const MainScreen: React.FC = () => {
           <h1 className="main-screen__title" style={{ marginRight: 'auto' }}>RailPOS</h1>
           <StyleSwitcher />
         </div>
-        <ShiftControls shift={shift} onShiftChange={setShift} />
+        {/* Shift is managed from Setup; we still show current availability state via PhoneTile */}
         <div className="main-screen__phones">
           <PhoneTile phoneId={1} shiftActive={!!shift} />
           <PhoneTile phoneId={2} shiftActive={!!shift} />

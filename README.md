@@ -61,8 +61,8 @@ A modern Point of Sale (POS) system for restaurants built with React, Vite, Elec
 - Customer form function and look redesign
 - [x] System to update catagories and items within
 - Split db to allow customer lookup and lookup orders from last three order, rest can be truncated when an order is placed.
-- [] Every use system (Bar, Restaurant and Takeout)
-- [] Tab system for bar
+- [-] Every use system (Bar, Restaurant and Takeout)
+- [-] Tab system for bar
 
 # Stretch goals
 - Usage of phone line to automatically pull phone number into system.

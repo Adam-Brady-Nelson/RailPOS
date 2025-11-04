@@ -6,6 +6,8 @@ A modern Point of Sale (POS) system for restaurants built with React, Vite, Elec
 - **Multi-phone order management**: Support for multiple ordering stations (Phone 1, Phone 2)
 - **Customer information capture**: Collect customer name, phone, and address
 - **Menu management**: Organize dishes by categories (Starters, Mains, Desserts, Drinks)
+- **Bar system**: Quick orders for a bar
+- **Restuarant system**: Table layouts, table states and save before pay
 - **SQLite database**: Local database for storing categories, dishes, and order information
 - **Real-time updates**: IPC communication between Electron main and renderer processes
 - **Cross-platform**: Runs on Linux, Windows, and macOS
@@ -59,6 +61,8 @@ A modern Point of Sale (POS) system for restaurants built with React, Vite, Elec
 - Customer form function and look redesign
 - [x] System to update catagories and items within
 - Split db to allow customer lookup and lookup orders from last three order, rest can be truncated when an order is placed.
+- [] Every use system (Bar, Restaurant and Takeout)
+- [] Tab system for bar
 
 # Stretch goals
 - Usage of phone line to automatically pull phone number into system.
